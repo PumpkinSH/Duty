@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>근무 배정판</title>
+<link rel="stylesheet" as="style" crossorigin
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --paper:#EEF1EE;
+    --board:#FFFFFF;
+    --line:#D9DFD8;
+    --ink:#1E2A26;
+    --ink-soft:#5B6862;
+    --muted-bg:#E3E7E1;
+    --muted-text:#95A099;
+    --a:#2F5D62;
+    --a-bg:#E4EEEC;
+    --b:#B5652A;
+    --b-bg:#F5E7DA;
+    --vac:#A63446;
+    --danger:#A63446;
+    --shadow:0 1px 2px rgba(30,42,38,0.06), 0 6px 16px rgba(30,42,38,0.05);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{
+    max-width:1180px;
+    margin:0 auto;
+    padding:28px 20px 60px;
+  }
+  .top{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .top h1{
+    font-size:22px;
+    letter-spacing:-0.02em;
+    margin:0;
+    font-weight:800;
+  }
+  .top .sub{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-top:4px;
+  }
+  .layout{
+    display:grid;
+    grid-template-columns:280px 1fr;
+    gap:20px;
+    align-items:start;
+  }
+  @media (max-width:860px){
+    .layout{grid-template-columns:1fr;}
+  }
+  .panel{
+    background:var(--board);
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:var(--shadow);
+    padding:16px;
+  }
+  .panel + .panel{margin-top:16px;}
+  .panel h2{
+    font-size:13px;
+    font-weight:700;
+    margin:0 0 12px;
+    color:var(--ink-soft);
+    letter-spacing:0.02em;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .row{display:flex; gap:6px; margin-bottom:8px;}
+  input[type=text], input[type=date], select{
+    font-family:inherit;
+    font-size:13px;
+    padding:7px 8px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:#fff;
+    color:var(--ink);
+  }
+  input[type=text]{flex:1; min-width:0;}
+  button{
+    font-family:inherit;
+    font-size:13px;
+    font-weight:600;
+    border:none;
+    border-radius:6px;
+    padding:7px 12px;
+    cursor:pointer;
+    background:var(--ink);
+    color:#fff;
+  }
+  button.secondary{
+    background:#fff;
+    border:1px solid var(--line);
+    color:var(--ink);
+  }
+  button.ghost{
+    background:transparent;
+    color:var(--ink-soft);
+    padding:4px 6px;
+    font-weight:500;
+  }
+  button.danger{background:var(--danger); color:#fff;}
+  button:disabled{opacity:0.4; cursor:not-allowed;}
+  .group-toggle{display:flex; gap:6px; margin-bottom:8px;}
+  .group-toggle label{
+    flex:1;
+    text-align:center;
+    padding:6px 4px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    color:var(--ink-soft);
+  }
+  .group-toggle input{display:none;}
+  .group-toggle input:checked + span{}
+  .group-toggle label.a-on{background:var(--a-bg); border-color:var(--a); color:var(--a);}
+  .group-toggle label.b-on{background:var(--b-bg); border-color:var(--b); color:var(--b);}
+
+  .person-item{
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 10px;
+    margin-bottom:8px;
+  }
+  .person-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:6px;
+  }
+  .person-name{font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px;}
+  .dot{width:8px; height:8px; border-radius:50%; display:inline-block;}
+  .dot.a{background:var(--a);}
+  .dot.b{background:var(--b);}
+  .count-row{display:flex; align-items:center; justify-content:space-between; margin-top:6px; gap:8px;}
+  .count-badge{font-size:11px; color:var(--ink-soft); background:var(--muted-bg); border-radius:20px; padding:2px 9px;}
+  .count-badge b{color:var(--ink);}
+  .target-field{font-size:11px; color:var(--ink-soft); display:flex; align-items:center; gap:5px;}
+  .target-field input{width:52px; font-size:11px; padding:3px 5px;}
+  .person-vac-row{display:flex; gap:4px; margin-top:6px;}
+  .person-vac-row input{flex:1; font-size:12px; padding:5px 6px;}
+  .vac-chips{display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;}
+  .chip{
+    font-size:11px;
+    background:#F6EDEC;
+    color:var(--vac);
+    border:1px solid #EAD4D2;
+    border-radius:20px;
+    padding:2px 8px;
+    display:flex;
+    align-items:center;
+    gap:5px;
+  }
+  .chip button{
+    background:none; padding:0; color:var(--vac); font-size:12px; font-weight:800; line-height:1;
+  }
+  .holiday-chip{
+    font-size:12px;
+    background:var(--muted-bg);
+    color:var(--ink-soft);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:3px 9px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin:0 6px 6px 0;
+  }
+  .holiday-chip button{background:none; color:var(--ink-soft); padding:0; font-weight:800;}
+  .holiday-list{display:flex; flex-wrap:wrap;}
+  .hol-month-group{margin-bottom:10px;}
+  .hol-month-group:last-child{margin-bottom:0;}
+  .hol-month-heading{
+    font-size:11px;
+    font-weight:800;
+    color:var(--ink-soft);
+    margin-bottom:5px;
+    padding-bottom:3px;
+    border-bottom:1px solid var(--line);
+  }
+
+  .cal-nav{display:flex; align-items:center; gap:10px;}
+  .cal-nav .ym{font-size:16px; font-weight:800; min-width:110px; text-align:center;}
+  .cal-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .stat{font-size:12px; color:var(--ink-soft);}
+  .stat b{color:var(--ink);}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:6px;
+  }
+  .dow{
+    text-align:center;
+    font-size:11px;
+    font-weight:700;
+    color:var(--ink-soft);
+    padding-bottom:4px;
+  }
+  .dow.sun{color:var(--vac);}
+  .cell{
+    background:var(--board);
+    border:1px solid var(--line);
+    border-radius:8px;
+    min-height:104px;
+    padding:6px 6px 8px;
+    display:flex;
+    flex-direction:column;
+    cursor:pointer;
+    transition:box-shadow .12s ease, transform .12s ease;
+  }
+  .cell:hover{box-shadow:var(--shadow); transform:translateY(-1px);}
+  .cell.empty{background:transparent; border:none; cursor:default;}
+  .cell.off{
+    background:var(--muted-bg);
+    color:var(--muted-text);
+    cursor:default;
+  }
+  .cell.off:hover{box-shadow:none; transform:none;}
+  .cell .datenum{font-size:12px; font-weight:700;}
+  .cell.off .datenum{color:var(--muted-text);}
+  .cell .label{font-size:10px; margin-top:1px; color:var(--muted-text);}
+  .slots{margin-top:auto; display:flex; flex-direction:column; gap:4px;}
+  .slot{
+    font-size:11px;
+    font-weight:700;
+    border-radius:5px;
+    padding:4px 6px;
+    line-height:1.2;
+  }
+  .slot.a{background:var(--a-bg); color:var(--a);}
+  .slot.b{background:var(--b-bg); color:var(--b);}
+  .slot.empty{
+    border:1px dashed var(--line);
+    color:var(--muted-text);
+    background:transparent;
+    text-align:center;
+  }
+  .slot.fail{
+    border:1px dashed #E0B3AE;
+    color:var(--vac);
+    background:#FBF0EF;
+    text-align:center;
+  }
+
+  /* modal */
+  .overlay{
+    position:fixed; inset:0; background:rgba(30,42,38,0.35);
+    display:none; align-items:center; justify-content:center; z-index:50;
+    padding:16px;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:#fff;
+    border-radius:12px;
+    padding:20px;
+    width:100%;
+    max-width:360px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.25);
+  }
+  .modal h3{margin:0 0 2px; font-size:15px; font-weight:800;}
+  .modal .mdate{font-size:12px; color:var(--ink-soft); margin-bottom:14px;}
+  .modal .field{margin-bottom:12px;}
+  .modal .field label{font-size:12px; font-weight:700; color:var(--ink-soft); display:block; margin-bottom:5px;}
+  .modal select{width:100%;}
+  .modal-actions{display:flex; gap:8px; margin-top:16px;}
+  .modal-actions button{flex:1;}
+  .warn{font-size:12px; color:var(--vac); margin-top:8px; line-height:1.4;}
+  .empty-msg{font-size:12px; color:var(--ink-soft); padding:6px 0;}
+  .footer-note{font-size:11px; color:var(--muted-text); margin-top:18px; line-height:1.6;}
+  .alist-row{
+    display:grid;
+    grid-template-columns:96px 1fr 1fr auto;
+    align-items:center;
+    gap:8px;
+    padding:7px 4px;
+    border-bottom:1px solid var(--line);
+    font-size:12px;
+  }
+  .alist-row:last-child{border-bottom:none;}
+  .alist-date{font-weight:700; color:var(--ink-soft);}
+  .alist-tag{
+    font-size:11px; font-weight:700; border-radius:5px; padding:3px 7px; display:inline-block;
+  }
+  .alist-tag.a{background:var(--a-bg); color:var(--a);}
+  .alist-tag.b{background:var(--b-bg); color:var(--b);}
+  .alist-tag.empty{color:var(--muted-text);}
+  .alist-row button{padding:4px 9px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div>
+      <h1>근무 배정판</h1>
+      <div class="sub">하루 2인 근무(그룹 A·B 각 1명 매칭) · 주말·공휴일 제외 · 휴가일 제외 · 연속 배정 금지</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div>
+      <div class="panel">
+        <h2>인원 관리</h2>
+        <div class="row">
+          <input id="pName" type="text" placeholder="이름" />
+        </div>
+        <div class="group-toggle" id="addGroupToggle">
+          <label class="a-on" data-g="A"><input type="radio" name="addGroup" value="A" checked /><span>그룹 A</span></label>
+          <label data-g="B"><input type="radio" name="addGroup" value="B" /><span>그룹 B</span></label>
+        </div>
+        <button id="addPersonBtn" style="width:100%">인원 추가</button>
+        <div id="peopleList" style="margin-top:14px;"></div>
+      </div>
+
+      <div class="panel">
+        <h2>공휴일 관리 (이번 달)</h2>
+        <div class="row">
+          <input id="holDate" type="date" />
+        </div>
+        <div class="row">
+          <input id="holLabel" type="text" placeholder="휴일명 (예: 대체공휴일)" />
+        </div>
+        <button id="addHolBtn" class="secondary" style="width:100%">공휴일 추가</button>
+        <div id="holidayList" style="margin-top:12px;"></div>
+        <div class="footer-note">신정·삼일절·어린이날·현충일·광복절·개천절·한글날·성탄절과, 설날·추석·부처님오신날(음력 기반) 및 대체공휴일이 자동으로 계산되어 등록됩니다. 법령 개정 등으로 실제와 다를 수 있으니 필요하면 직접 추가·삭제해 주세요.</div>
+      </div>
+
+      <div class="panel">
+        <h2>데이터</h2>
+        <div class="row">
+          <button class="secondary" id="exportBtn" style="flex:1">내보내기</button>
+          <button class="secondary" id="importBtn" style="flex:1">불러오기</button>
+          <input id="importFile" type="file" accept="application/json" style="display:none" />
+        </div>
+        <div class="footer-note">이 페이지는 새로고침하면 데이터가 사라집니다. 작업 후 내보내기로 저장하고, 다음에 불러오기로 이어서 사용하세요.</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <div class="cal-toolbar">
+          <div class="cal-nav">
+            <button class="secondary" id="prevBtn">‹</button>
+            <div class="ym" id="ymLabel"></div>
+            <button class="secondary" id="nextBtn">›</button>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span class="stat" id="statLabel"></span>
+            <button id="autoBtn">이번 달 자동 배정</button>
+          </div>
+        </div>
+        <div class="grid" id="dowRow"></div>
+        <div class="grid" id="calGrid" style="margin-top:6px;"></div>
+      </div>
+
+      <div class="panel">
+        <h2>이번 달 배정 목록</h2>
+        <div id="assignList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>근무자 지정</h3>
+    <div class="mdate" id="modalDate"></div>
+    <div class="field">
+      <label>그룹 A 인원</label>
+      <select id="sel1"></select>
+    </div>
+    <div class="field">
+      <label>그룹 B 인원</label>
+      <select id="sel2"></select>
+    </div>
+    <div id="modalWarn"></div>
+    <div class="modal-actions">
+      <button class="secondary" id="modalCancel">닫기</button>
+      <button class="danger" id="modalClear">배정 해제</button>
+      <button id="modalSave">저장</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/korean-lunar-calendar/dist/korean-lunar-calendar.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  // ---------- state ----------
+  const state = {
+    people: [],        // {id, name, group}
+    holidays: {},       // 'YYYY-MM-DD' -> label
+    vacations: {},       // personId -> ['YYYY-MM-DD', ...]
+    assignments: {},     // 'YYYY-MM-DD' -> [personId, personId]
+    viewYear: null,
+    viewMonth: null,     // 0-indexed
+    editingDate: null
+  };
+
+  const today = new Date();
+  state.viewYear = today.getFullYear();
+  state.viewMonth = today.getMonth();
+
+  let uidCounter = 1;
+  function uid(){ return 'p' + (uidCounter++) + '_' + Math.random().toString(36).slice(2,7); }
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function iso(y,m,d){ return `${y}-${pad(m+1)}-${pad(d)}`; }
+  function parseISO(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y, m-1, d); }
+  function addDaysISO(s, delta){
+    const d = parseISO(s);
+    d.setDate(d.getDate()+delta);
+    return iso(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  function lunarToSolarISO(year, lmonth, lday){
+    const cal = new KoreanLunarCalendar();
+    cal.setLunarDate(year, lmonth, lday, false);
+    const s = cal.getSolarCalendar();
+    return iso(s.year, s.month-1, s.day);
+  }
+
+  function ensureLunarHolidays(y, setFn){
+    if(typeof KoreanLunarCalendar === 'undefined') return;
+    try{
+      const seol = lunarToSolarISO(y,1,1);
+      setFn(addDaysISO(seol,-1), '설날 연휴');
+      setFn(seol, '설날');
+      setFn(addDaysISO(seol,1), '설날 연휴');
+
+      const chuseok = lunarToSolarISO(y,8,15);
+      setFn(addDaysISO(chuseok,-1), '추석 연휴');
+      setFn(chuseok, '추석');
+      setFn(addDaysISO(chuseok,1), '추석 연휴');
+
+      const buddha = lunarToSolarISO(y,4,8);
+      setFn(buddha, '부처님오신날');
+    }catch(e){
+      console.warn('lunar holiday calculation failed for', y, e);
+    }
+  }
+
+  function addSubstituteHolidays(){
+    const targets = ['어린이날','삼일절','광복절','개천절','한글날','제헌절','설날','설날 연휴','추석','추석 연휴','부처님오신날'];
+    const entries = Object.keys(state.holidays)
+      .filter(k => targets.includes(state.holidays[k]))
+      .sort();
+    entries.forEach(ds=>{
+      const dow = parseISO(ds).getDay();
+      if(dow===0 || dow===6){
+        let cand = addDaysISO(ds,1);
+        for(let i=0;i<10;i++){
+          const cdow = parseISO(cand).getDay();
+          if(cdow!==0 && cdow!==6 && !(cand in state.holidays)){
+            state.holidays[cand] = '대체공휴일';
+            break;
+          }
+          cand = addDaysISO(cand,1);
+        }
+      }
+    });
+  }
+
+  function ensureDefaultHolidays(){
+    const fixed = [
+      ['01-01','신정'], ['03-01','삼일절'], ['05-05','어린이날'],
+      ['06-06','현충일'], ['07-17','제헌절'], ['08-15','광복절'], ['10-03','개천절'],
+      ['10-09','한글날'], ['12-25','성탄절']
+    ];
+    const lo = Math.min(today.getFullYear(), state.viewYear) - 1;
+    const hi = Math.max(today.getFullYear(), state.viewYear) + 1;
+    for(let y = lo; y <= hi; y++){
+      fixed.forEach(([md,label])=>{
+        const key = `${y}-${md}`;
+        if(!(key in state.holidays)) state.holidays[key] = label;
+      });
+      ensureLunarHolidays(y, (dateStr, label)=>{
+        if(!(dateStr in state.holidays)) state.holidays[dateStr] = label;
+      });
+    }
+    addSubstituteHolidays();
+  }
+  ensureDefaultHolidays();
+
+  function isWeekend(dateObj){
+    const d = dateObj.getDay();
+    return d===0 || d===6;
+  }
+  function isHoliday(dateStr){
+    return Object.prototype.hasOwnProperty.call(state.holidays, dateStr);
+  }
+  function isWorkingDay(dateStr){
+    const d = parseISO(dateStr);
+    if(isWeekend(d)) return false;
+    if(isHoliday(dateStr)) return false;
+    return true;
+  }
+  function isOnVacation(personId, dateStr){
+    const list = state.vacations[personId] || [];
+    return list.includes(dateStr);
+  }
+  function getAdjacentWorkingDay(dateStr, dir){
+    let cur = dateStr;
+    for(let i=0;i<14;i++){
+      cur = addDaysISO(cur, dir);
+      if(isWorkingDay(cur)) return cur;
+    }
+    return null;
+  }
+  function getAssigned(dateStr){
+    return state.assignments[dateStr] || [];
+  }
+  function personById(id){
+    return state.people.find(p=>p.id===id);
+  }
+
+  // ---------- people management ----------
+  function addPerson(name, group){
+    if(!name.trim()) return;
+    state.people.push({id: uid(), name: name.trim(), group, target: null});
+    renderPeople();
+    renderCalendar();
+  }
+  function deletePerson(id){
+    state.people = state.people.filter(p=>p.id!==id);
+    delete state.vacations[id];
+    Object.keys(state.assignments).forEach(d=>{
+      state.assignments[d] = state.assignments[d].filter(pid=>pid!==id);
+      if(state.assignments[d].length===0) delete state.assignments[d];
+    });
+    renderPeople();
+    renderCalendar();
+  }
+  function setTarget(id, value){
+    const p = personById(id);
+    if(!p) return;
+    if(value===''||value===null||isNaN(value)){
+      p.target = null;
+    } else {
+      p.target = Math.max(0, parseInt(value,10));
+    }
+    renderPeople();
+  }
+  function countForMonth(personId, year, month){
+    let c = 0;
+    Object.keys(state.assignments).forEach(ds=>{
+      const d = parseISO(ds);
+      if(d.getFullYear()===year && d.getMonth()===month && state.assignments[ds].includes(personId)) c++;
+    });
+    return c;
+  }
+  function addVacation(personId, dateStr){
+    if(!dateStr) return;
+    if(!state.vacations[personId]) state.vacations[personId]=[];
+    if(!state.vacations[personId].includes(dateStr)){
+      state.vacations[personId].push(dateStr);
+      state.vacations[personId].sort();
+    }
+    renderPeople();
+    renderCalendar();
+  }
+  function removeVacation(personId, dateStr){
+    if(!state.vacations[personId]) return;
+    state.vacations[personId] = state.vacations[personId].filter(d=>d!==dateStr);
+    renderPeople();
+    renderCalendar();
+  }
+
+  function renderPeople(){
+    const wrap = document.getElementById('peopleList');
+    wrap.innerHTML='';
+    if(state.people.length===0){
+      wrap.innerHTML = '<div class="empty-msg">등록된 인원이 없습니다.</div>';
+      return;
+    }
+    state.people.forEach(p=>{
+      const item = document.createElement('div');
+      item.className='person-item';
+      const vacs = state.vacations[p.id] || [];
+      const monthCount = countForMonth(p.id, state.viewYear, state.viewMonth);
+      item.innerHTML = `
+        <div class="person-head">
+          <div class="person-name"><span class="dot ${p.group==='A'?'a':'b'}"></span>${escapeHtml(p.name)} <span style="color:var(--ink-soft); font-weight:500;">· ${p.group}</span></div>
+          <button class="ghost" data-del="${p.id}">삭제</button>
+        </div>
+        <div class="count-row">
+          <span class="count-badge">이번 달 <b>${monthCount}</b>회</span>
+          <span class="target-field">
+            목표
+            <input type="number" min="0" data-targetinput="${p.id}" value="${p.target===null?'':p.target}" placeholder="자동" />
+          </span>
+        </div>
+        <div class="person-vac-row">
+          <input type="date" data-vacinput="${p.id}" />
+          <button class="secondary" data-vacadd="${p.id}">휴가 추가</button>
+        </div>
+        <div class="vac-chips" data-vaclist="${p.id}"></div>
+      `;
+      wrap.appendChild(item);
+      const chipWrap = item.querySelector(`[data-vaclist="${p.id}"]`);
+      vacs.forEach(v=>{
+        const chip = document.createElement('span');
+        chip.className='chip';
+        chip.innerHTML = `${v} <button data-vacdel="${p.id}|${v}">×</button>`;
+        chipWrap.appendChild(chip);
+      });
+    });
+
+    wrap.querySelectorAll('[data-del]').forEach(b=>{
+      b.addEventListener('click', ()=> deletePerson(b.getAttribute('data-del')));
+    });
+    wrap.querySelectorAll('[data-targetinput]').forEach(inp=>{
+      inp.addEventListener('change', ()=>{
+        setTarget(inp.getAttribute('data-targetinput'), inp.value);
+      });
+    });
+    wrap.querySelectorAll('[data-vacadd]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const pid = b.getAttribute('data-vacadd');
+        const input = wrap.querySelector(`[data-vacinput="${pid}"]`);
+        addVacation(pid, input.value);
+        input.value='';
+      });
+    });
+    wrap.querySelectorAll('[data-vacdel]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const [pid, d] = b.getAttribute('data-vacdel').split('|');
+        removeVacation(pid, d);
+      });
+    });
+  }
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- holidays management ----------
+  function addHoliday(dateStr, label){
+    if(!dateStr) return;
+    state.holidays[dateStr] = label && label.trim() ? label.trim() : '휴일';
+    renderHolidays();
+    renderCalendar();
+  }
+  function removeHoliday(dateStr){
+    delete state.holidays[dateStr];
+    renderHolidays();
+    renderCalendar();
+  }
+  function renderHolidays(){
+    const wrap = document.getElementById('holidayList');
+    wrap.innerHTML='';
+    const prefix = `${state.viewYear}-${pad(state.viewMonth+1)}`;
+    const keys = Object.keys(state.holidays).filter(k=>k.startsWith(prefix)).sort();
+    if(keys.length===0){
+      wrap.innerHTML = '<div class="empty-msg">이번 달에 등록된 공휴일이 없습니다.</div>';
+      return;
+    }
+    const chipRow = document.createElement('div');
+    chipRow.className='holiday-list';
+    keys.forEach(k=>{
+      const chip = document.createElement('span');
+      chip.className='holiday-chip';
+      chip.innerHTML = `${k.slice(8,10)}일 ${escapeHtml(state.holidays[k])} <button data-holdel="${k}">×</button>`;
+      chipRow.appendChild(chip);
+    });
+    wrap.appendChild(chipRow);
+    wrap.querySelectorAll('[data-holdel]').forEach(b=>{
+      b.addEventListener('click', ()=> removeHoliday(b.getAttribute('data-holdel')));
+    });
+  }
+
+  // ---------- calendar rendering ----------
+  const DOW = ['일','월','화','수','목','금','토'];
+
+  function renderDowRow(){
+    const wrap = document.getElementById('dowRow');
+    wrap.innerHTML='';
+    DOW.forEach((d,i)=>{
+      const el = document.createElement('div');
+      el.className = 'dow' + (i===0?' sun':'');
+      el.textContent = d;
+      wrap.appendChild(el);
+    });
+  }
+
+  function renderCalendar(){
+    document.getElementById('ymLabel').textContent = `${state.viewYear}년 ${state.viewMonth+1}월`;
+    renderHolidays();
+
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML='';
+
+    const firstDay = new Date(state.viewYear, state.viewMonth, 1);
+    const startOffset = firstDay.getDay();
+    const daysInMonth = new Date(state.viewYear, state.viewMonth+1, 0).getDate();
+
+    for(let i=0;i<startOffset;i++){
+      const e = document.createElement('div');
+      e.className='cell empty';
+      grid.appendChild(e);
+    }
+
+    let workingCount=0, assignedCount=0;
+
+    for(let d=1; d<=daysInMonth; d++){
+      const dateStr = iso(state.viewYear, state.viewMonth, d);
+      const dateObj = new Date(state.viewYear, state.viewMonth, d);
+      const weekend = isWeekend(dateObj);
+      const holiday = isHoliday(dateStr);
+      const off = weekend || holiday;
+
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (off ? ' off' : '');
+
+      const num = document.createElement('div');
+      num.className='datenum';
+      num.textContent = d;
+      cell.appendChild(num);
+
+      if(off){
+        const lbl = document.createElement('div');
+        lbl.className='label';
+        lbl.textContent = holiday ? state.holidays[dateStr] : (dateObj.getDay()===0?'일요일':'토요일');
+        cell.appendChild(lbl);
+      } else {
+        workingCount++;
+        const slots = document.createElement('div');
+        slots.className='slots';
+        const assigned = getAssigned(dateStr);
+        if(assigned.length===2){
+          assignedCount++;
+          assigned.forEach(pid=>{
+            const person = personById(pid);
+            const s = document.createElement('div');
+            if(person){
+              s.className = 'slot ' + (person.group==='A' ? 'a':'b');
+              s.textContent = person.name;
+            } else {
+              s.className = 'slot empty';
+              s.textContent = '(삭제된 인원)';
+            }
+            slots.appendChild(s);
+          });
+        } else {
+          for(let i=0;i<2;i++){
+            const s = document.createElement('div');
+            s.className='slot empty';
+            s.textContent = '미배정';
+            slots.appendChild(s);
+          }
+        }
+        cell.appendChild(slots);
+        cell.addEventListener('click', ()=> openModal(dateStr));
+      }
+
+      grid.appendChild(cell);
+    }
+
+    document.getElementById('statLabel').innerHTML =
+      `근무일 <b>${workingCount}</b>일 · 배정완료 <b>${assignedCount}</b>일`;
+
+    renderAssignmentList();
+  }
+
+  function renderAssignmentList(){
+    const wrap = document.getElementById('assignList');
+    wrap.innerHTML='';
+    const y = state.viewYear, m = state.viewMonth;
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+    const rows = [];
+    for(let d=1; d<=daysInMonth; d++){
+      const ds = iso(y,m,d);
+      if(!isWorkingDay(ds)) continue;
+      rows.push(ds);
+    }
+    if(rows.length===0){
+      wrap.innerHTML = '<div class="empty-msg">이번 달에는 근무일이 없습니다.</div>';
+      return;
+    }
+    rows.forEach(ds=>{
+      const assigned = getAssigned(ds);
+      const dateObj = parseISO(ds);
+      const row = document.createElement('div');
+      row.className='alist-row';
+      const p1 = assigned[0] ? personById(assigned[0]) : null;
+      const p2 = assigned[1] ? personById(assigned[1]) : null;
+      function tagHtml(p){
+        if(!p) return '<span class="alist-tag empty">미배정</span>';
+        return `<span class="alist-tag ${p.group==='A'?'a':'b'}">${escapeHtml(p.name)}</span>`;
+      }
+      row.innerHTML = `
+        <div class="alist-date">${pad(dateObj.getMonth()+1)}/${pad(dateObj.getDate())} (${DOW[dateObj.getDay()]})</div>
+        <div>${tagHtml(p1)}</div>
+        <div>${tagHtml(p2)}</div>
+        <button class="secondary" data-editrow="${ds}">수정</button>
+      `;
+      wrap.appendChild(row);
+    });
+    wrap.querySelectorAll('[data-editrow]').forEach(b=>{
+      b.addEventListener('click', ()=> openModal(b.getAttribute('data-editrow')));
+    });
+  }
+
+  // ---------- modal ----------
+  const overlay = document.getElementById('overlay');
+  const sel1 = document.getElementById('sel1');
+  const sel2 = document.getElementById('sel2');
+
+  function eligiblePeople(dateStr, group){
+    const prevWD = getAdjacentWorkingDay(dateStr, -1);
+    const nextWD = getAdjacentWorkingDay(dateStr, 1);
+    const prevAssigned = prevWD ? getAssigned(prevWD) : [];
+    const nextAssigned = nextWD ? getAssigned(nextWD) : [];
+    return state.people.filter(p=>{
+      if(p.group!==group) return false;
+      if(isOnVacation(p.id, dateStr)) return false;
+      if(prevAssigned.includes(p.id)) return false;
+      if(nextAssigned.includes(p.id)) return false;
+      return true;
+    });
+  }
+
+  function fillSelect(selectEl, list, selectedId){
+    selectEl.innerHTML='';
+    const noneOpt = document.createElement('option');
+    noneOpt.value=''; noneOpt.textContent='선택 안함';
+    selectEl.appendChild(noneOpt);
+    list.forEach(p=>{
+      const opt = document.createElement('option');
+      opt.value=p.id; opt.textContent=p.name;
+      if(p.id===selectedId) opt.selected=true;
+      selectEl.appendChild(opt);
+    });
+  }
+
+  function refreshModalSelects(){
+    const dateStr = state.editingDate;
+    const currentAssigned = getAssigned(dateStr);
+    const cur1 = sel1.value || currentAssigned.find(id=>{const p=personById(id); return p && p.group==='A';}) || '';
+    const cur2 = sel2.value || currentAssigned.find(id=>{const p=personById(id); return p && p.group==='B';}) || '';
+
+    const listA = eligiblePeople(dateStr, 'A');
+    const listB = eligiblePeople(dateStr, 'B');
+
+    // keep the currently-selected person in the list even if constraints would otherwise exclude them
+    if(cur1 && !listA.find(p=>p.id===cur1) && personById(cur1)) listA.unshift(personById(cur1));
+    if(cur2 && !listB.find(p=>p.id===cur2) && personById(cur2)) listB.unshift(personById(cur2));
+
+    fillSelect(sel1, listA, cur1);
+    fillSelect(sel2, listB, cur2);
+
+    const warn = document.getElementById('modalWarn');
+    const msgs = [];
+    if(state.people.filter(p=>p.group==='A').length===0) msgs.push('그룹 A에 등록된 인원이 없습니다.');
+    if(state.people.filter(p=>p.group==='B').length===0) msgs.push('그룹 B에 등록된 인원이 없습니다.');
+    if(listA.length===0 && !cur1) msgs.push('이 날짜에 그룹 A에서 배정 가능한 인원이 없습니다 (휴가 또는 연속 배정 제한).');
+    if(listB.length===0 && !cur2) msgs.push('이 날짜에 그룹 B에서 배정 가능한 인원이 없습니다 (휴가 또는 연속 배정 제한).');
+    warn.innerHTML = msgs.length ? `<div class="warn">${msgs.join('<br>')}</div>` : '';
+  }
+
+  function openModal(dateStr){
+    state.editingDate = dateStr;
+    document.getElementById('modalDate').textContent =
+      `${dateStr} (${DOW[parseISO(dateStr).getDay()]}요일)`;
+
+    sel1.value=''; sel2.value='';
+    refreshModalSelects();
+    const assigned = getAssigned(dateStr);
+    if(assigned.length===2){
+      const a = assigned.find(id=>{const p=personById(id); return p && p.group==='A';});
+      const b = assigned.find(id=>{const p=personById(id); return p && p.group==='B';});
+      if(a) sel1.value=a;
+      if(b) sel2.value=b;
+    }
+    overlay.classList.add('show');
+  }
+  function closeModal(){
+    overlay.classList.remove('show');
+    state.editingDate=null;
+  }
+
+  sel1.addEventListener('change', refreshModalSelects);
+  sel2.addEventListener('change', refreshModalSelects);
+
+  document.getElementById('modalCancel').addEventListener('click', closeModal);
+  document.getElementById('modalClear').addEventListener('click', ()=>{
+    delete state.assignments[state.editingDate];
+    renderCalendar();
+    renderPeople();
+    closeModal();
+  });
+  document.getElementById('modalSave').addEventListener('click', ()=>{
+    const id1 = sel1.value, id2 = sel2.value;
+    const warn = document.getElementById('modalWarn');
+    if(!id1 || !id2){
+      warn.innerHTML = '<div class="warn">두 명을 모두 선택해 주세요.</div>';
+      return;
+    }
+    if(id1===id2){
+      warn.innerHTML = '<div class="warn">서로 다른 두 명을 선택해 주세요.</div>';
+      return;
+    }
+    state.assignments[state.editingDate] = [id1, id2];
+    renderCalendar();
+    renderPeople();
+    closeModal();
+  });
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeModal(); });
+
+  function updateGroupToggleStyle(containerId){
+    const container = document.getElementById(containerId);
+    container.querySelectorAll('label').forEach(l=>{
+      const input = l.querySelector('input');
+      l.classList.remove('a-on','b-on');
+      if(input.checked) l.classList.add(input.value==='A' ? 'a-on' : 'b-on');
+    });
+  }
+
+  // ---------- add-person group toggle ----------
+  document.getElementById('addGroupToggle').addEventListener('change', ()=>{
+    updateGroupToggleStyle('addGroupToggle');
+  });
+
+  // ---------- auto assign ----------
+  function autoAssignMonth(){
+    const y = state.viewYear, m = state.viewMonth;
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+    const workingDays = [];
+    for(let d=1; d<=daysInMonth; d++){
+      const ds = iso(y,m,d);
+      if(isWorkingDay(ds)) workingDays.push(ds);
+    }
+    if(workingDays.length===0){
+      alert('이번 달에는 근무일이 없습니다.');
+      return;
+    }
+    if(!confirm(`${y}년 ${m+1}월의 기존 배정을 모두 지우고 다시 배정합니다. 계속할까요?`)) return;
+
+    // this month's counts start at 0 so distribution is fair within the month
+    const assignCount = {};
+    state.people.forEach(p=>{ assignCount[p.id]=0; });
+
+    // clear existing assignments for this month's working days first
+    workingDays.forEach(ds=>{ delete state.assignments[ds]; });
+
+    const failedDays = [];
+
+    function pickOne(pool){
+      const sorted = pool.slice().sort((p1,p2)=>{
+        const hasTarget1 = p1.target!==null ? 1 : 0;
+        const hasTarget2 = p2.target!==null ? 1 : 0;
+        if(hasTarget1!==hasTarget2) return hasTarget2-hasTarget1; // targeted people first
+        const c = (assignCount[p1.id]||0) - (assignCount[p2.id]||0);
+        if(c!==0) return c;
+        return Math.random()-0.5;
+      });
+      return sorted[0] || null;
+    }
+
+    workingDays.forEach(ds=>{
+      const prevWD = getAdjacentWorkingDay(ds,-1);
+      const prevAssigned = prevWD ? getAssigned(prevWD) : [];
+
+      function candidatesFor(group){
+        return state.people.filter(p=>
+          p.group===group &&
+          !isOnVacation(p.id, ds) &&
+          !prevAssigned.includes(p.id) &&
+          (p.target===null || assignCount[p.id] < p.target)
+        );
+      }
+
+      const candA = candidatesFor('A');
+      const candB = candidatesFor('B');
+
+      if(candA.length===0 || candB.length===0){
+        failedDays.push(ds);
+        return;
+      }
+
+      const pickedA = pickOne(candA);
+      const pickedB = pickOne(candB);
+      state.assignments[ds] = [pickedA.id, pickedB.id];
+      assignCount[pickedA.id] = (assignCount[pickedA.id]||0)+1;
+      assignCount[pickedB.id] = (assignCount[pickedB.id]||0)+1;
+    });
+
+    renderCalendar();
+    renderPeople();
+
+    if(failedDays.length){
+      alert(`자동 배정 완료. 다만 ${failedDays.length}일은 그룹 A·B 양쪽에서 배정 가능한 인원이 없어 배정하지 못했습니다:\n${failedDays.join(', ')}`);
+    } else {
+      alert('이번 달 근무일 전체를 배정했습니다.');
+    }
+  }
+
+  // ---------- nav ----------
+  document.getElementById('prevBtn').addEventListener('click', ()=>{
+    state.viewMonth--;
+    if(state.viewMonth<0){ state.viewMonth=11; state.viewYear--; }
+    ensureDefaultHolidays();
+    renderCalendar();
+    renderPeople();
+  });
+  document.getElementById('nextBtn').addEventListener('click', ()=>{
+    state.viewMonth++;
+    if(state.viewMonth>11){ state.viewMonth=0; state.viewYear++; }
+    ensureDefaultHolidays();
+    renderCalendar();
+    renderPeople();
+  });
+  document.getElementById('autoBtn').addEventListener('click', autoAssignMonth);
+
+  // ---------- add person / holiday handlers ----------
+  document.getElementById('addPersonBtn').addEventListener('click', ()=>{
+    const name = document.getElementById('pName').value;
+    const group = document.querySelector('input[name="addGroup"]:checked').value;
+    addPerson(name, group);
+    document.getElementById('pName').value='';
+  });
+  document.getElementById('pName').addEventListener('keydown', (e)=>{
+    if(e.key==='Enter') document.getElementById('addPersonBtn').click();
+  });
+  document.getElementById('addHolBtn').addEventListener('click', ()=>{
+    const d = document.getElementById('holDate').value;
+    const l = document.getElementById('holLabel').value;
+    addHoliday(d, l);
+    document.getElementById('holDate').value='';
+    document.getElementById('holLabel').value='';
+  });
+
+  // ---------- export / import ----------
+  document.getElementById('exportBtn').addEventListener('click', ()=>{
+    const data = {
+      people: state.people,
+      holidays: state.holidays,
+      vacations: state.vacations,
+      assignments: state.assignments
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `근무배정_${iso(state.viewYear, state.viewMonth, 1)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('importBtn').addEventListener('click', ()=>{
+    document.getElementById('importFile').click();
+  });
+  document.getElementById('importFile').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const data = JSON.parse(reader.result);
+        state.people = (data.people || []).map(p=>({...p, target: (p.target===undefined ? null : p.target)}));
+        state.holidays = data.holidays || {};
+        state.vacations = data.vacations || {};
+        state.assignments = data.assignments || {};
+        ensureDefaultHolidays();
+        renderPeople();
+        renderCalendar();
+      }catch(err){
+        alert('파일을 불러오지 못했습니다. 올바른 JSON 파일인지 확인해 주세요.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value='';
+  });
+
+  // ---------- init ----------
+  renderDowRow();
+  renderPeople();
+  renderCalendar();
+})();
+</script>
+</body>
+</html>
