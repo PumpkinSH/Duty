@@ -139,7 +139,10 @@
     border-radius:8px;
     padding:8px 10px;
     margin-bottom:8px;
+    cursor:pointer;
+    transition:box-shadow .12s ease;
   }
+  .person-item:hover{box-shadow:var(--shadow);}
   .person-head{
     display:flex;
     align-items:center;
@@ -155,6 +158,52 @@
   .count-badge b{color:var(--ink);}
   .target-field{font-size:11px; color:var(--ink-soft); display:flex; align-items:center; gap:5px;}
   .target-field input{width:52px; font-size:11px; padding:3px 5px;}
+  .rule-row{
+    display:flex;
+    gap:14px;
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px solid var(--line);
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+  .rule-row label{display:flex; align-items:center; gap:5px; cursor:pointer;}
+  .detail-cell{
+    background:var(--board);
+    border:1px solid var(--line);
+    border-radius:6px;
+    min-height:32px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .detail-cell.empty{background:transparent; border:none; cursor:default;}
+  .detail-cell.off{background:var(--muted-bg); color:var(--muted-text);}
+  .detail-cell.vac{background:#F6EDEC; color:var(--vac); border-color:#EAD4D2; font-weight:800;}
+  .stat-summary{display:flex; gap:8px; margin-bottom:8px;}
+  .stat-box{
+    flex:1;
+    background:var(--muted-bg);
+    border-radius:8px;
+    padding:8px 4px;
+    text-align:center;
+  }
+  .stat-box-num{font-size:20px; font-weight:800; color:var(--ink); line-height:1.1;}
+  .stat-box-label{font-size:11px; color:var(--ink-soft); margin-top:2px;}
+  .stat-months{display:flex; flex-wrap:wrap; gap:5px;}
+  .stat-chip{
+    font-size:11px;
+    background:transparent;
+    color:var(--ink-soft);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:2px 8px;
+  }
+  .stat-chip.active{background:var(--a-bg); color:var(--a); border-color:var(--a);}
+  .stat-chip b{color:var(--ink);}
   .person-vac-row{display:flex; gap:4px; margin-top:6px;}
   .person-vac-row input{flex:1; font-size:12px; padding:5px 6px;}
   .vac-chips{display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;}
@@ -311,6 +360,68 @@
   .alist-tag.b{background:var(--b-bg); color:var(--b);}
   .alist-tag.empty{color:var(--muted-text);}
   .alist-row button{padding:4px 9px;}
+
+  .tabbar{display:flex; gap:4px; margin-bottom:12px;}
+  .tab-btn{
+    flex:1;
+    background:transparent;
+    color:var(--ink-soft);
+    border:1px solid var(--line);
+    border-radius:8px 8px 0 0;
+    border-bottom:none;
+    padding:9px 6px;
+    font-size:13px;
+  }
+  .tab-btn.active{
+    background:var(--board);
+    color:var(--ink);
+    box-shadow:var(--shadow);
+  }
+  .pick-chip{
+    font-size:12px;
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:4px 10px;
+    display:flex;
+    align-items:center;
+    gap:5px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .pick-chip input{margin:0;}
+  .conflict-item{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:8px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 10px;
+    margin-bottom:8px;
+  }
+  .stats-row{
+    display:grid;
+    grid-template-columns:1fr auto auto auto;
+    align-items:center;
+    gap:8px;
+    padding:7px 4px;
+    border-bottom:1px solid var(--line);
+    font-size:12px;
+  }
+  .stats-row:last-child{border-bottom:none;}
+  .stats-name{font-weight:700; display:flex; align-items:center; gap:6px;}
+  .stats-num{font-size:12px; color:var(--ink-soft); text-align:right; min-width:52px;}
+  .stats-num b{color:var(--ink); font-size:13px;}
+  .stats-head{
+    display:grid;
+    grid-template-columns:1fr auto auto auto;
+    gap:8px;
+    padding:0 4px 6px;
+    font-size:11px;
+    color:var(--muted-text);
+    border-bottom:1px solid var(--line);
+    margin-bottom:2px;
+  }
 </style>
 </head>
 <body>
@@ -318,7 +429,6 @@
   <div class="top">
     <div>
       <h1>근무 배정판</h1>
-      <div class="sub">하루 2인 근무(그룹 A·B 각 1명 매칭) · 주말·공휴일 제외 · 휴가일 제외 · 연속 배정 금지</div>
     </div>
   </div>
 
@@ -334,6 +444,12 @@
           <label data-g="B"><input type="radio" name="addGroup" value="B" /><span>그룹 B</span></label>
         </div>
         <button id="addPersonBtn" style="width:100%">인원 추가</button>
+
+        <div class="rule-row">
+          <label><input type="checkbox" id="ruleA" /> 그룹 A 중복배정</label>
+          <label><input type="checkbox" id="ruleB" checked /> 그룹 B 중복배정</label>
+        </div>
+
         <div id="peopleList" style="margin-top:14px;"></div>
       </div>
 
@@ -347,7 +463,7 @@
         </div>
         <button id="addHolBtn" class="secondary" style="width:100%">공휴일 추가</button>
         <div id="holidayList" style="margin-top:12px;"></div>
-        <div class="footer-note">신정·삼일절·어린이날·현충일·광복절·개천절·한글날·성탄절과, 설날·추석·부처님오신날(음력 기반) 및 대체공휴일이 자동으로 계산되어 등록됩니다. 법령 개정 등으로 실제와 다를 수 있으니 필요하면 직접 추가·삭제해 주세요.</div>
+        <div class="footer-note">신정·삼일절·어린이날·현충일·제헌절·광복절·개천절·한글날·성탄절과, 설날·추석·부처님오신날(음력 기반) 및 대체공휴일이 자동으로 계산되어 등록됩니다. 법령 개정 등으로 실제와 다를 수 있으니 필요하면 직접 추가·삭제해 주세요.</div>
       </div>
 
       <div class="panel">
@@ -377,11 +493,6 @@
         <div class="grid" id="dowRow"></div>
         <div class="grid" id="calGrid" style="margin-top:6px;"></div>
       </div>
-
-      <div class="panel">
-        <h2>이번 달 배정 목록</h2>
-        <div id="assignList"></div>
-      </div>
     </div>
   </div>
 </div>
@@ -391,11 +502,11 @@
     <h3>근무자 지정</h3>
     <div class="mdate" id="modalDate"></div>
     <div class="field">
-      <label>그룹 A 인원</label>
+      <label>근무자 1</label>
       <select id="sel1"></select>
     </div>
     <div class="field">
-      <label>그룹 B 인원</label>
+      <label>근무자 2</label>
       <select id="sel2"></select>
     </div>
     <div id="modalWarn"></div>
@@ -403,6 +514,45 @@
       <button class="secondary" id="modalCancel">닫기</button>
       <button class="danger" id="modalClear">배정 해제</button>
       <button id="modalSave">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="detailOverlay">
+  <div class="modal" style="max-width:400px;">
+    <h3 id="detailName">상세설정</h3>
+
+    <div class="field">
+      <label>그룹</label>
+      <div class="group-toggle" id="detailGroupToggle">
+        <label data-g="A"><input type="radio" name="detailGroup" value="A" /><span>그룹 A</span></label>
+        <label data-g="B"><input type="radio" name="detailGroup" value="B" /><span>그룹 B</span></label>
+      </div>
+    </div>
+
+    <div class="field" style="display:flex; align-items:center; gap:10px;">
+      <label style="margin-bottom:0;">목표 지정 횟수</label>
+      <input type="number" min="0" id="detailTarget" placeholder="자동" style="width:70px;" />
+    </div>
+
+    <div class="field">
+      <label>통계</label>
+      <div id="detailStats"></div>
+    </div>
+
+    <div class="field">
+      <label>휴가 (날짜를 눌러 체크/해제)</label>
+      <div class="cal-nav" style="margin-bottom:8px; justify-content:center;">
+        <button class="secondary" type="button" id="detailPrevBtn">‹</button>
+        <div class="ym" id="detailYm" style="font-size:14px; min-width:90px;"></div>
+        <button class="secondary" type="button" id="detailNextBtn">›</button>
+      </div>
+      <div class="grid" id="detailDowRow"></div>
+      <div class="grid" id="detailCalGrid" style="margin-top:4px;"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button id="detailClose" style="flex:1;">닫기</button>
     </div>
   </div>
 </div>
@@ -418,9 +568,13 @@
     holidays: {},       // 'YYYY-MM-DD' -> label
     vacations: {},       // personId -> ['YYYY-MM-DD', ...]
     assignments: {},     // 'YYYY-MM-DD' -> [personId, personId]
+    groupRules: {A:false, B:true}, // 같은 그룹끼리 함께 배정 가능 여부
     viewYear: null,
     viewMonth: null,     // 0-indexed
-    editingDate: null
+    editingDate: null,
+    detailPersonId: null,
+    detailYear: null,
+    detailMonth: null
   };
 
   const today = new Date();
@@ -575,13 +729,20 @@
     });
     return c;
   }
-  function addVacation(personId, dateStr){
-    if(!dateStr) return;
+  function addVacationRange(personId, startStr, endStr){
+    if(!startStr) return;
+    const end = endStr || startStr;
+    if(parseISO(end) < parseISO(startStr)) return;
     if(!state.vacations[personId]) state.vacations[personId]=[];
-    if(!state.vacations[personId].includes(dateStr)){
-      state.vacations[personId].push(dateStr);
-      state.vacations[personId].sort();
+    let cur = startStr;
+    let guard = 0;
+    while(guard < 370){
+      if(!state.vacations[personId].includes(cur)) state.vacations[personId].push(cur);
+      if(cur===end) break;
+      cur = addDaysISO(cur, 1);
+      guard++;
     }
+    state.vacations[personId].sort();
     renderPeople();
     renderCalendar();
   }
@@ -590,6 +751,17 @@
     state.vacations[personId] = state.vacations[personId].filter(d=>d!==dateStr);
     renderPeople();
     renderCalendar();
+  }
+
+  // ---------- group rules (같은 그룹끼리 함께 배정 가능 여부) ----------
+  function pairValid(id1, id2){
+    if(id1===id2) return false;
+    const p1 = personById(id1), p2 = personById(id2);
+    if(!p1 || !p2) return false;
+    if(p1.group===p2.group){
+      return !!state.groupRules[p1.group];
+    }
+    return true;
   }
 
   function renderPeople(){
@@ -602,63 +774,153 @@
     state.people.forEach(p=>{
       const item = document.createElement('div');
       item.className='person-item';
-      const vacs = state.vacations[p.id] || [];
+      item.setAttribute('data-detail', p.id);
       const monthCount = countForMonth(p.id, state.viewYear, state.viewMonth);
       item.innerHTML = `
         <div class="person-head">
           <div class="person-name"><span class="dot ${p.group==='A'?'a':'b'}"></span>${escapeHtml(p.name)} <span style="color:var(--ink-soft); font-weight:500;">· ${p.group}</span></div>
-          <button class="ghost" data-del="${p.id}">삭제</button>
+          <button class="danger" data-del="${p.id}">삭제</button>
         </div>
         <div class="count-row">
           <span class="count-badge">이번 달 <b>${monthCount}</b>회</span>
-          <span class="target-field">
-            목표
-            <input type="number" min="0" data-targetinput="${p.id}" value="${p.target===null?'':p.target}" placeholder="자동" />
-          </span>
         </div>
-        <div class="person-vac-row">
-          <input type="date" data-vacinput="${p.id}" />
-          <button class="secondary" data-vacadd="${p.id}">휴가 추가</button>
-        </div>
-        <div class="vac-chips" data-vaclist="${p.id}"></div>
       `;
       wrap.appendChild(item);
-      const chipWrap = item.querySelector(`[data-vaclist="${p.id}"]`);
-      vacs.forEach(v=>{
-        const chip = document.createElement('span');
-        chip.className='chip';
-        chip.innerHTML = `${v} <button data-vacdel="${p.id}|${v}">×</button>`;
-        chipWrap.appendChild(chip);
-      });
     });
 
     wrap.querySelectorAll('[data-del]').forEach(b=>{
-      b.addEventListener('click', ()=> deletePerson(b.getAttribute('data-del')));
-    });
-    wrap.querySelectorAll('[data-targetinput]').forEach(inp=>{
-      inp.addEventListener('change', ()=>{
-        setTarget(inp.getAttribute('data-targetinput'), inp.value);
+      b.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        deletePerson(b.getAttribute('data-del'));
       });
     });
-    wrap.querySelectorAll('[data-vacadd]').forEach(b=>{
-      b.addEventListener('click', ()=>{
-        const pid = b.getAttribute('data-vacadd');
-        const input = wrap.querySelector(`[data-vacinput="${pid}"]`);
-        addVacation(pid, input.value);
-        input.value='';
-      });
-    });
-    wrap.querySelectorAll('[data-vacdel]').forEach(b=>{
-      b.addEventListener('click', ()=>{
-        const [pid, d] = b.getAttribute('data-vacdel').split('|');
-        removeVacation(pid, d);
-      });
+    wrap.querySelectorAll('.person-item[data-detail]').forEach(el=>{
+      el.addEventListener('click', ()=> openDetailModal(el.getAttribute('data-detail')));
     });
   }
 
   function escapeHtml(s){
     return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
+
+  // ---------- detail modal (그룹 / 목표 / 휴가) ----------
+  const detailOverlay = document.getElementById('detailOverlay');
+  const detailTargetInput = document.getElementById('detailTarget');
+
+  function openDetailModal(personId){
+    const p = personById(personId);
+    if(!p) return;
+    state.detailPersonId = personId;
+    state.detailYear = state.viewYear;
+    state.detailMonth = state.viewMonth;
+
+    document.getElementById('detailName').textContent = `${p.name} 상세설정`;
+    document.querySelectorAll('input[name="detailGroup"]').forEach(r=>{ r.checked = (r.value===p.group); });
+    updateGroupToggleStyle('detailGroupToggle');
+    detailTargetInput.value = p.target===null ? '' : p.target;
+
+    renderDetailStats(personId);
+    renderDetailCalendar();
+    detailOverlay.classList.add('show');
+  }
+  function closeDetailModal(){
+    detailOverlay.classList.remove('show');
+    state.detailPersonId = null;
+  }
+  function renderDetailStats(personId){
+    const wrap = document.getElementById('detailStats');
+    const byMonth = {};
+    let total = 0;
+    Object.keys(state.assignments).forEach(ds=>{
+      if(state.assignments[ds].includes(personId)){
+        total++;
+        const ym = ds.slice(0,7);
+        byMonth[ym] = (byMonth[ym]||0)+1;
+      }
+    });
+    const thisYm = `${state.detailYear}-${pad(state.detailMonth+1)}`;
+    const thisMonthCnt = byMonth[thisYm] || 0;
+
+    let html = `<div class="stat-summary">
+      <div class="stat-box"><div class="stat-box-num">${total}</div><div class="stat-box-label">총 지정</div></div>
+      <div class="stat-box"><div class="stat-box-num">${thisMonthCnt}</div><div class="stat-box-label">${state.detailMonth+1}월</div></div>
+    </div>`;
+
+    const curYear = String(state.detailYear);
+    const monthsThisYear = Object.keys(byMonth).filter(ym=>ym.startsWith(curYear)).sort();
+    if(monthsThisYear.length){
+      html += `<div class="stat-months">` + monthsThisYear.map(ym=>{
+        const mm = parseInt(ym.slice(5,7),10);
+        const active = ym===thisYm ? ' active' : '';
+        return `<span class="stat-chip${active}">${mm}월 <b>${byMonth[ym]}</b></span>`;
+      }).join('') + `</div>`;
+    }
+    wrap.innerHTML = html;
+  }
+  function toggleVacationDay(personId, dateStr){
+    if(isOnVacation(personId, dateStr)) removeVacation(personId, dateStr);
+    else addVacationRange(personId, dateStr, dateStr);
+    renderDetailCalendar();
+  }
+  function renderDetailCalendar(){
+    const pid = state.detailPersonId;
+    if(!pid) return;
+    const y = state.detailYear, m = state.detailMonth;
+    document.getElementById('detailYm').textContent = `${y}년 ${m+1}월`;
+    renderDowRow('detailDowRow');
+
+    const wrap = document.getElementById('detailCalGrid');
+    wrap.innerHTML='';
+    const firstDay = new Date(y, m, 1);
+    const startOffset = firstDay.getDay();
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+
+    for(let i=0;i<startOffset;i++){
+      const e = document.createElement('div');
+      e.className='detail-cell empty';
+      wrap.appendChild(e);
+    }
+    for(let d=1; d<=daysInMonth; d++){
+      const ds = iso(y,m,d);
+      const dateObj = new Date(y,m,d);
+      const off = isWeekend(dateObj) || isHoliday(ds);
+      const vac = isOnVacation(pid, ds);
+      const cell = document.createElement('div');
+      cell.className = 'detail-cell' + (off?' off':'') + (vac?' vac':'');
+      cell.textContent = d;
+      cell.addEventListener('click', ()=> toggleVacationDay(pid, ds));
+      wrap.appendChild(cell);
+    }
+  }
+
+  document.getElementById('detailGroupToggle').addEventListener('change', ()=>{
+    const pid = state.detailPersonId;
+    if(!pid) return;
+    const p = personById(pid);
+    const group = document.querySelector('input[name="detailGroup"]:checked').value;
+    p.group = group;
+    updateGroupToggleStyle('detailGroupToggle');
+    renderPeople();
+    renderCalendar();
+  });
+  detailTargetInput.addEventListener('change', ()=>{
+    if(!state.detailPersonId) return;
+    setTarget(state.detailPersonId, detailTargetInput.value);
+  });
+  document.getElementById('detailPrevBtn').addEventListener('click', ()=>{
+    state.detailMonth--;
+    if(state.detailMonth<0){ state.detailMonth=11; state.detailYear--; }
+    ensureDefaultHolidays();
+    renderDetailCalendar();
+  });
+  document.getElementById('detailNextBtn').addEventListener('click', ()=>{
+    state.detailMonth++;
+    if(state.detailMonth>11){ state.detailMonth=0; state.detailYear++; }
+    ensureDefaultHolidays();
+    renderDetailCalendar();
+  });
+  document.getElementById('detailClose').addEventListener('click', closeDetailModal);
+  detailOverlay.addEventListener('click', (e)=>{ if(e.target===detailOverlay) closeDetailModal(); });
 
   // ---------- holidays management ----------
   function addHoliday(dateStr, label){
@@ -698,8 +960,8 @@
   // ---------- calendar rendering ----------
   const DOW = ['일','월','화','수','목','금','토'];
 
-  function renderDowRow(){
-    const wrap = document.getElementById('dowRow');
+  function renderDowRow(containerId){
+    const wrap = document.getElementById(containerId || 'dowRow');
     wrap.innerHTML='';
     DOW.forEach((d,i)=>{
       const el = document.createElement('div');
@@ -784,47 +1046,6 @@
 
     document.getElementById('statLabel').innerHTML =
       `근무일 <b>${workingCount}</b>일 · 배정완료 <b>${assignedCount}</b>일`;
-
-    renderAssignmentList();
-  }
-
-  function renderAssignmentList(){
-    const wrap = document.getElementById('assignList');
-    wrap.innerHTML='';
-    const y = state.viewYear, m = state.viewMonth;
-    const daysInMonth = new Date(y, m+1, 0).getDate();
-    const rows = [];
-    for(let d=1; d<=daysInMonth; d++){
-      const ds = iso(y,m,d);
-      if(!isWorkingDay(ds)) continue;
-      rows.push(ds);
-    }
-    if(rows.length===0){
-      wrap.innerHTML = '<div class="empty-msg">이번 달에는 근무일이 없습니다.</div>';
-      return;
-    }
-    rows.forEach(ds=>{
-      const assigned = getAssigned(ds);
-      const dateObj = parseISO(ds);
-      const row = document.createElement('div');
-      row.className='alist-row';
-      const p1 = assigned[0] ? personById(assigned[0]) : null;
-      const p2 = assigned[1] ? personById(assigned[1]) : null;
-      function tagHtml(p){
-        if(!p) return '<span class="alist-tag empty">미배정</span>';
-        return `<span class="alist-tag ${p.group==='A'?'a':'b'}">${escapeHtml(p.name)}</span>`;
-      }
-      row.innerHTML = `
-        <div class="alist-date">${pad(dateObj.getMonth()+1)}/${pad(dateObj.getDate())} (${DOW[dateObj.getDay()]})</div>
-        <div>${tagHtml(p1)}</div>
-        <div>${tagHtml(p2)}</div>
-        <button class="secondary" data-editrow="${ds}">수정</button>
-      `;
-      wrap.appendChild(row);
-    });
-    wrap.querySelectorAll('[data-editrow]').forEach(b=>{
-      b.addEventListener('click', ()=> openModal(b.getAttribute('data-editrow')));
-    });
   }
 
   // ---------- modal ----------
@@ -832,13 +1053,12 @@
   const sel1 = document.getElementById('sel1');
   const sel2 = document.getElementById('sel2');
 
-  function eligiblePeople(dateStr, group){
+  function eligiblePeople(dateStr){
     const prevWD = getAdjacentWorkingDay(dateStr, -1);
     const nextWD = getAdjacentWorkingDay(dateStr, 1);
     const prevAssigned = prevWD ? getAssigned(prevWD) : [];
     const nextAssigned = nextWD ? getAssigned(nextWD) : [];
     return state.people.filter(p=>{
-      if(p.group!==group) return false;
       if(isOnVacation(p.id, dateStr)) return false;
       if(prevAssigned.includes(p.id)) return false;
       if(nextAssigned.includes(p.id)) return false;
@@ -853,7 +1073,7 @@
     selectEl.appendChild(noneOpt);
     list.forEach(p=>{
       const opt = document.createElement('option');
-      opt.value=p.id; opt.textContent=p.name;
+      opt.value=p.id; opt.textContent=`${p.name} (${p.group})`;
       if(p.id===selectedId) opt.selected=true;
       selectEl.appendChild(opt);
     });
@@ -862,25 +1082,28 @@
   function refreshModalSelects(){
     const dateStr = state.editingDate;
     const currentAssigned = getAssigned(dateStr);
-    const cur1 = sel1.value || currentAssigned.find(id=>{const p=personById(id); return p && p.group==='A';}) || '';
-    const cur2 = sel2.value || currentAssigned.find(id=>{const p=personById(id); return p && p.group==='B';}) || '';
+    const cur1 = sel1.value || currentAssigned[0] || '';
+    const cur2 = sel2.value || currentAssigned[1] || '';
 
-    const listA = eligiblePeople(dateStr, 'A');
-    const listB = eligiblePeople(dateStr, 'B');
+    const base = eligiblePeople(dateStr);
+    let list1 = base.filter(p=> p.id!==cur2);
+    let list2 = base.filter(p=> p.id!==cur1);
+
+    if(cur2) list1 = list1.filter(p=> pairValid(p.id, cur2));
+    if(cur1) list2 = list2.filter(p=> pairValid(cur1, p.id));
 
     // keep the currently-selected person in the list even if constraints would otherwise exclude them
-    if(cur1 && !listA.find(p=>p.id===cur1) && personById(cur1)) listA.unshift(personById(cur1));
-    if(cur2 && !listB.find(p=>p.id===cur2) && personById(cur2)) listB.unshift(personById(cur2));
+    if(cur1 && !list1.find(p=>p.id===cur1) && personById(cur1)) list1.unshift(personById(cur1));
+    if(cur2 && !list2.find(p=>p.id===cur2) && personById(cur2)) list2.unshift(personById(cur2));
 
-    fillSelect(sel1, listA, cur1);
-    fillSelect(sel2, listB, cur2);
+    fillSelect(sel1, list1, cur1);
+    fillSelect(sel2, list2, cur2);
 
     const warn = document.getElementById('modalWarn');
     const msgs = [];
-    if(state.people.filter(p=>p.group==='A').length===0) msgs.push('그룹 A에 등록된 인원이 없습니다.');
-    if(state.people.filter(p=>p.group==='B').length===0) msgs.push('그룹 B에 등록된 인원이 없습니다.');
-    if(listA.length===0 && !cur1) msgs.push('이 날짜에 그룹 A에서 배정 가능한 인원이 없습니다 (휴가 또는 연속 배정 제한).');
-    if(listB.length===0 && !cur2) msgs.push('이 날짜에 그룹 B에서 배정 가능한 인원이 없습니다 (휴가 또는 연속 배정 제한).');
+    if(state.people.length===0) msgs.push('등록된 인원이 없습니다.');
+    if(list1.length===0 && !cur1) msgs.push('이 날짜에 배정 가능한 인원이 없습니다 (휴가·연속 배정·그룹 규칙 제한).');
+    if(list2.length===0 && !cur2) msgs.push('이 날짜에 배정 가능한 인원이 없습니다 (휴가·연속 배정·그룹 규칙 제한).');
     warn.innerHTML = msgs.length ? `<div class="warn">${msgs.join('<br>')}</div>` : '';
   }
 
@@ -890,13 +1113,11 @@
       `${dateStr} (${DOW[parseISO(dateStr).getDay()]}요일)`;
 
     sel1.value=''; sel2.value='';
-    refreshModalSelects();
     const assigned = getAssigned(dateStr);
+    refreshModalSelects();
     if(assigned.length===2){
-      const a = assigned.find(id=>{const p=personById(id); return p && p.group==='A';});
-      const b = assigned.find(id=>{const p=personById(id); return p && p.group==='B';});
-      if(a) sel1.value=a;
-      if(b) sel2.value=b;
+      sel1.value = assigned[0];
+      sel2.value = assigned[1];
     }
     overlay.classList.add('show');
   }
@@ -924,6 +1145,10 @@
     }
     if(id1===id2){
       warn.innerHTML = '<div class="warn">서로 다른 두 명을 선택해 주세요.</div>';
+      return;
+    }
+    if(!pairValid(id1,id2)){
+      warn.innerHTML = '<div class="warn">그룹 규칙상 이 두 명은 함께 배정할 수 없습니다.</div>';
       return;
     }
     state.assignments[state.editingDate] = [id1, id2];
@@ -971,7 +1196,7 @@
 
     const failedDays = [];
 
-    function pickOne(pool){
+    function sortByFairness(pool){
       const sorted = pool.slice().sort((p1,p2)=>{
         const hasTarget1 = p1.target!==null ? 1 : 0;
         const hasTarget2 = p2.target!==null ? 1 : 0;
@@ -980,32 +1205,41 @@
         if(c!==0) return c;
         return Math.random()-0.5;
       });
-      return sorted[0] || null;
+      return sorted;
     }
 
     workingDays.forEach(ds=>{
       const prevWD = getAdjacentWorkingDay(ds,-1);
       const prevAssigned = prevWD ? getAssigned(prevWD) : [];
 
-      function candidatesFor(group){
-        return state.people.filter(p=>
-          p.group===group &&
-          !isOnVacation(p.id, ds) &&
-          !prevAssigned.includes(p.id) &&
-          (p.target===null || assignCount[p.id] < p.target)
-        );
-      }
+      const cand = state.people.filter(p=>
+        !isOnVacation(p.id, ds) &&
+        !prevAssigned.includes(p.id) &&
+        (p.target===null || assignCount[p.id] < p.target)
+      );
 
-      const candA = candidatesFor('A');
-      const candB = candidatesFor('B');
-
-      if(candA.length===0 || candB.length===0){
+      if(cand.length<2){
         failedDays.push(ds);
         return;
       }
 
-      const pickedA = pickOne(candA);
-      const pickedB = pickOne(candB);
+      const sorted = sortByFairness(cand);
+      let pickedA=null, pickedB=null;
+      outer:
+      for(const a of sorted){
+        for(const b of sorted){
+          if(b.id===a.id) continue;
+          if(pairValid(a.id, b.id)){
+            pickedA=a; pickedB=b;
+            break outer;
+          }
+        }
+      }
+
+      if(!pickedA || !pickedB){
+        failedDays.push(ds);
+        return;
+      }
       state.assignments[ds] = [pickedA.id, pickedB.id];
       assignCount[pickedA.id] = (assignCount[pickedA.id]||0)+1;
       assignCount[pickedB.id] = (assignCount[pickedB.id]||0)+1;
@@ -1015,7 +1249,7 @@
     renderPeople();
 
     if(failedDays.length){
-      alert(`자동 배정 완료. 다만 ${failedDays.length}일은 그룹 A·B 양쪽에서 배정 가능한 인원이 없어 배정하지 못했습니다:\n${failedDays.join(', ')}`);
+      alert(`자동 배정 완료. 다만 ${failedDays.length}일은 조건(휴가·연속 배정·그룹 규칙)을 만족하는 조합이 없어 배정하지 못했습니다:\n${failedDays.join(', ')}`);
     } else {
       alert('이번 달 근무일 전체를 배정했습니다.');
     }
@@ -1056,13 +1290,23 @@
     document.getElementById('holLabel').value='';
   });
 
+  document.getElementById('ruleA').addEventListener('change', (e)=>{
+    state.groupRules.A = e.target.checked;
+    renderCalendar();
+  });
+  document.getElementById('ruleB').addEventListener('change', (e)=>{
+    state.groupRules.B = e.target.checked;
+    renderCalendar();
+  });
+
   // ---------- export / import ----------
   document.getElementById('exportBtn').addEventListener('click', ()=>{
     const data = {
       people: state.people,
       holidays: state.holidays,
       vacations: state.vacations,
-      assignments: state.assignments
+      assignments: state.assignments,
+      groupRules: state.groupRules
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
     const url = URL.createObjectURL(blob);
@@ -1086,6 +1330,9 @@
         state.holidays = data.holidays || {};
         state.vacations = data.vacations || {};
         state.assignments = data.assignments || {};
+        state.groupRules = data.groupRules || {A:false, B:true};
+        document.getElementById('ruleA').checked = !!state.groupRules.A;
+        document.getElementById('ruleB').checked = !!state.groupRules.B;
         ensureDefaultHolidays();
         renderPeople();
         renderCalendar();
