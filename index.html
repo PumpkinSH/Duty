@@ -194,6 +194,21 @@
   .stat-box-num{font-size:22px; font-weight:800; color:var(--ink); line-height:1.1;}
   .stat-box-label{font-size:11px; color:var(--ink-soft); margin-top:3px;}
 
+  .detail-name-input{
+    display:block;
+    width:100%;
+    box-sizing:border-box;
+    border:none;
+    border-bottom:2px solid transparent;
+    font-size:18px;
+    font-weight:800;
+    color:var(--ink);
+    padding:2px 2px 6px;
+    margin-bottom:16px;
+    background:transparent;
+  }
+  .detail-name-input:hover{border-bottom-color:var(--line);}
+  .detail-name-input:focus{outline:none; border-bottom-color:var(--a);}
   .detail-controls{
     display:flex;
     gap:10px;
@@ -484,6 +499,177 @@
     border-bottom:1px solid var(--line);
     margin-bottom:2px;
   }
+  .maintabs{display:flex; gap:6px;}
+  .mtab{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--ink-soft);
+    border-radius:8px;
+    padding:7px 14px;
+    font-size:13px;
+  }
+  .mtab.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+
+  .leave-types{display:flex; gap:8px;}
+  .leave-types .lt{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:5px;
+    cursor:pointer;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    padding:12px 4px;
+    font-size:13px; font-weight:700;
+    color:var(--ink-soft);
+    background:#fff;
+    transition:box-shadow .12s ease, transform .12s ease;
+  }
+  .leave-types .lt:hover{box-shadow:var(--shadow);}
+  .leave-types .lt input{display:none;}
+  .lt-dot{width:11px; height:11px; border-radius:50%; background:var(--muted-bg); display:block;}
+  .lt-yeon .lt-dot{background:#B9D2CF;}
+  .lt-byeong .lt-dot{background:#E9C4C7;}
+  .lt-teuk .lt-dot{background:#EAC49E;}
+  .lt-gyoyuk .lt-dot{background:#C3CBE8;}
+  .lt-yeon.on{background:#E4EEEC; border-color:#2F5D62; color:#1E4A4F;}
+  .lt-yeon.on .lt-dot{background:#2F5D62;}
+  .lt-byeong.on{background:#F6EDEC; border-color:#A63446; color:#8C2B3A;}
+  .lt-byeong.on .lt-dot{background:#A63446;}
+  .lt-teuk.on{background:#F5E7DA; border-color:#B5652A; color:#7A3F13;}
+  .lt-teuk.on .lt-dot{background:#B5652A;}
+  .lt-gyoyuk.on{background:#E9EBF7; border-color:#42549C; color:#33417A;}
+  .lt-gyoyuk.on .lt-dot{background:#42549C;}
+
+  .leave-person-list{display:flex; flex-direction:column; gap:6px;}
+  .lp-item{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:8px;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    padding:10px 12px;
+    cursor:pointer;
+    transition:box-shadow .12s ease;
+  }
+  .lp-item:hover{box-shadow:var(--shadow);}
+  .lp-item.active{border-color:var(--ink); background:var(--muted-bg);}
+  .lp-name{font-size:13px; font-weight:700; display:flex; align-items:center; gap:7px;}
+  .lp-count{font-size:11px; color:var(--ink-soft); background:var(--muted-bg); border-radius:20px; padding:2px 9px;}
+  .lp-item.active .lp-count{background:#fff;}
+
+  .leave-legend{display:flex; gap:12px; font-size:11px; color:var(--ink-soft); align-items:center;}
+  .leave-legend span{display:flex; align-items:center; gap:4px;}
+  .lg{width:9px; height:9px; border-radius:2px; display:inline-block;}
+  .lg-yeon{background:#2F5D62;}
+  .lg-byeong{background:#A63446;}
+  .lg-teuk{background:#B5652A;}
+  .lg-gyoyuk{background:#42549C;}
+
+  .lcell{
+    background:var(--board);
+    border:1px solid var(--line);
+    border-radius:8px;
+    min-height:78px;
+    padding:6px;
+    display:flex; flex-direction:column;
+    cursor:pointer;
+  }
+  .lcell.empty{background:transparent; border:none; cursor:default;}
+  .lcell.off{background:var(--muted-bg); color:var(--muted-text); cursor:default;}
+  .lcell .datenum{font-size:12px; font-weight:700;}
+  .lcell.off .datenum{color:var(--muted-text);}
+  .lcell.sel-yeon{background:#E4EEEC; border-color:#2F5D62;}
+  .lcell.sel-byeong{background:#F6EDEC; border-color:#A63446;}
+  .lcell.sel-teuk{background:#F5E7DA; border-color:#B5652A;}
+  .lcell.sel-gyoyuk{background:#E9EBF7; border-color:#42549C;}
+  .lcell .ltag{margin-top:auto; font-size:11px; font-weight:800;}
+  .lcell.sel-yeon .ltag{color:#1E4A4F;}
+  .lcell.sel-byeong .ltag{color:#8C2B3A;}
+  .lcell.sel-teuk .ltag{color:#7A3F13;}
+  .lcell.sel-gyoyuk .ltag{color:#33417A;}
+  .lothers{margin-top:2px; display:flex; flex-wrap:wrap; gap:2px;}
+  .lchip{font-size:10px; background:var(--muted-bg); color:var(--ink-soft); border-radius:3px; padding:1px 4px;}
+
+  #leaveTextOut{
+    width:100%; min-height:180px; margin-top:8px;
+    font-family:ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size:12px; line-height:1.5;
+    border:1px solid var(--line); border-radius:8px;
+    padding:8px; background:#fff; color:var(--ink);
+    resize:vertical; box-sizing:border-box;
+  }
+  #printArea{ display:none; }
+
+  @media print {
+    body *{ visibility:hidden; }
+    #printArea, #printArea *{ visibility:visible; }
+    #printArea{
+      display:block;
+      position:absolute; top:0; left:0; width:100%;
+    }
+    @page{ size:A4 portrait; margin:13mm; }
+  }
+
+  .print-page{
+    width:100%;
+    font-family:'Pretendard', -apple-system, sans-serif;
+    color:#2A2420;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  .print-title{
+    font-size:22px; font-weight:800; text-align:center;
+    letter-spacing:-0.02em;
+    padding-bottom:2mm;
+    border-bottom:2.5px solid #2A2420;
+  }
+  .print-sub{
+    text-align:center; font-size:10px; color:#8A8078;
+    margin:2mm 0 4mm;
+  }
+  .print-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:1.5mm;
+  }
+  .print-dow{ margin-bottom:1.5mm; }
+  .print-dow div{
+    text-align:center; font-size:10px; font-weight:800; color:#8A8078;
+    padding-bottom:1mm;
+  }
+  .print-dow div:first-child{ color:#A63446; }
+  .pcell{
+    border:0.3mm solid #E3DDD4;
+    border-radius:1.5mm;
+    min-height:26mm;
+    padding:1.3mm 1.5mm;
+    display:flex; flex-direction:column;
+    background:#fff;
+  }
+  .pcell.empty{ border:none; background:transparent; }
+  .pcell.off{ background:#F7F4EF; }
+  .pcell .pnum{ font-size:11px; font-weight:800; }
+  .pcell.off .pnum{ color:#B0A99E; }
+  .pcell .pholiday{ font-size:7.5px; color:#A63446; font-weight:700; margin-top:0.3mm; }
+  .pentries{ margin-top:auto; display:flex; flex-direction:column; gap:0.6mm; }
+  .ptag{
+    font-size:7.5px; font-weight:700;
+    border-radius:1mm;
+    padding:0.5mm 1mm;
+    line-height:1.3;
+    border-left:1mm solid;
+  }
+  .ptag.yeon{ background:#E4EEEC; border-color:#2F5D62; color:#1E4A4F; }
+  .ptag.byeong{ background:#F6EDEC; border-color:#A63446; color:#8C2B3A; }
+  .ptag.teuk{ background:#F5E7DA; border-color:#B5652A; color:#7A3F13; }
+  .ptag.gyoyuk{ background:#E9EBF7; border-color:#42549C; color:#33417A; }
+
+  .print-legend{
+    display:flex; gap:5mm; justify-content:center;
+    margin-top:5mm; padding-top:3mm;
+    border-top:0.3mm solid #E3DDD4;
+    font-size:9px; color:#5B534B;
+  }
+  .print-legend span{ display:flex; align-items:center; gap:1.5mm; }
+  .print-legend i{ width:2.5mm; height:2.5mm; border-radius:0.6mm; display:inline-block; }
 </style>
 </head>
 <body>
@@ -492,8 +678,13 @@
     <div>
       <h1>근무 배정판</h1>
     </div>
+    <div class="maintabs">
+      <button class="mtab active" id="mtabAssign">근무 배정</button>
+      <button class="mtab" id="mtabLeave">연가 관리</button>
+    </div>
   </div>
 
+  <div id="viewAssign">
   <div class="layout">
     <div>
       <div class="panel">
@@ -559,6 +750,75 @@
       </div>
     </div>
   </div>
+  </div>
+
+  <div id="viewLeave" style="display:none">
+    <div class="layout">
+      <div>
+        <div class="panel">
+          <h2>대상자</h2>
+          <div id="leavePersonList" class="leave-person-list"></div>
+        </div>
+
+        <div class="panel">
+          <h2>휴가 종류</h2>
+          <div class="leave-types" id="leaveTypeToggle">
+            <label class="lt lt-yeon on"><input type="radio" name="leaveType" value="연가" checked /><span class="lt-dot"></span><span>연가</span></label>
+            <label class="lt lt-byeong"><input type="radio" name="leaveType" value="병가" /><span class="lt-dot"></span><span>병가</span></label>
+            <label class="lt lt-teuk"><input type="radio" name="leaveType" value="특별휴가" /><span class="lt-dot"></span><span>특별휴가</span></label>
+            <label class="lt lt-gyoyuk"><input type="radio" name="leaveType" value="교육" /><span class="lt-dot"></span><span>교육</span></label>
+          </div>
+          <div class="footer-note">달력에서 날짜를 클릭하면 선택한 종류로 지정되고, 같은 종류를 다시 클릭하면 해제됩니다.</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <div class="cal-toolbar">
+            <div class="cal-nav">
+              <button class="secondary" id="leavePrevBtn">‹</button>
+              <div class="ym" id="leaveYmLabel"></div>
+              <button class="secondary" id="leaveNextBtn">›</button>
+            </div>
+            <div class="leave-legend">
+              <span><i class="lg lg-yeon"></i>연가</span>
+              <span><i class="lg lg-byeong"></i>병가</span>
+              <span><i class="lg lg-teuk"></i>특별휴가</span>
+              <span><i class="lg lg-gyoyuk"></i>교육</span>
+            </div>
+          </div>
+          <div class="grid" id="leaveDowRow"></div>
+          <div class="grid" id="leaveCalGrid" style="margin-top:6px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>텍스트 출력</h2>
+      <div class="row">
+        <button class="secondary" id="leaveTextMonthBtn" style="flex:1">이번 달</button>
+        <button class="secondary" id="leaveTextAllBtn" style="flex:1">전체</button>
+        <button class="secondary" id="leaveCopyBtn" style="flex:1">복사</button>
+      </div>
+      <textarea id="leaveTextOut" readonly placeholder="위 버튼을 누르면 내역이 출력됩니다."></textarea>
+    </div>
+
+    <div class="panel">
+      <h2>휴가 달력 (A4)</h2>
+      <div class="footer-note" style="margin-top:0;">현재 보고 있는 달의 휴가 현황을 A4 세로 용지 한 장으로 정리해서 인쇄하거나 PDF로 저장할 수 있어요.</div>
+      <button id="printCalBtn" style="width:100%; margin-top:8px;">인쇄 / PDF로 저장</button>
+    </div>
+  </div>
+</div>
+
+<div id="printArea">
+  <div class="print-page">
+    <div class="print-title" id="printTitle"></div>
+    <div class="print-sub" id="printSub"></div>
+    <div class="print-grid print-dow" id="printDowRow"></div>
+    <div class="print-grid" id="printGrid"></div>
+    <div class="print-legend" id="printLegend"></div>
+  </div>
 </div>
 
 <div class="overlay" id="overlay">
@@ -590,7 +850,7 @@
 
 <div class="overlay" id="detailOverlay">
   <div class="modal" style="max-width:400px;">
-    <h3 id="detailName" style="margin-bottom:16px;">상세설정</h3>
+    <input type="text" id="detailNameInput" class="detail-name-input" placeholder="이름" />
 
     <div class="detail-controls">
       <div class="detail-ctl">
@@ -612,19 +872,7 @@
 
     <div id="detailStats" style="margin-bottom:16px;"></div>
 
-    <div class="field" style="margin-bottom:8px;">
-      <div class="vac-head">
-        <label style="margin-bottom:0;">휴가</label>
-        <span class="vac-hint">날짜를 눌러 지정/해제</span>
-      </div>
-      <div class="cal-nav" style="margin:8px 0; justify-content:center;">
-        <button class="secondary" type="button" id="detailPrevBtn">‹</button>
-        <div class="ym" id="detailYm" style="font-size:14px; min-width:90px;"></div>
-        <button class="secondary" type="button" id="detailNextBtn">›</button>
-      </div>
-      <div class="grid" id="detailDowRow"></div>
-      <div class="grid" id="detailCalGrid" style="margin-top:4px;"></div>
-    </div>
+    <div class="footer-note" style="margin-top:0;">휴가는 상단 '연가 관리' 탭에서 종류별로 지정합니다.</div>
 
     <div class="modal-actions">
       <button id="detailClose" style="flex:1;">닫기</button>
@@ -641,7 +889,7 @@
   const state = {
     people: [],        // {id, name, group}
     holidays: {},       // 'YYYY-MM-DD' -> label
-    vacations: {},       // personId -> ['YYYY-MM-DD', ...]
+    vacations: {},       // personId -> { 'YYYY-MM-DD': '연가'|'병가'|'특별휴가' }
     assignments: {},     // 'YYYY-MM-DD' -> [personId, personId]
     groupRules: {A:false, B:true}, // 같은 그룹끼리 함께 배정 가능 여부
     locked: {}, // 'YYYY-MM-DD' -> [bool, bool] (각 자리의 사람 고정 여부)
@@ -758,9 +1006,33 @@
     if(isHoliday(dateStr)) return false;
     return true;
   }
+  const LEAVE_TYPES = ['연가','특별휴가','병가','교육'];
+
+  // 구버전 데이터(배열)도 읽을 수 있도록 정규화: personId -> { 'YYYY-MM-DD': '연가' }
+  function normalizeVacations(v){
+    const out = {};
+    Object.keys(v || {}).forEach(pid=>{
+      const val = v[pid];
+      if(Array.isArray(val)){
+        out[pid] = {};
+        val.forEach(ds=>{ out[pid][ds] = '연가'; });
+      } else if(val && typeof val === 'object'){
+        out[pid] = Object.assign({}, val);
+      }
+    });
+    return out;
+  }
+  function vacMap(personId){
+    if(!state.vacations[personId]) state.vacations[personId] = {};
+    return state.vacations[personId];
+  }
   function isOnVacation(personId, dateStr){
-    const list = state.vacations[personId] || [];
-    return list.includes(dateStr);
+    const m = state.vacations[personId];
+    return !!(m && m[dateStr]);
+  }
+  function getVacType(personId, dateStr){
+    const m = state.vacations[personId];
+    return (m && m[dateStr]) || null;
   }
   function getAdjacentWorkingDay(dateStr, dir){
     let cur = dateStr;
@@ -783,6 +1055,7 @@
     state.people.push({id: uid(), name: name.trim(), group, target: null});
     renderPeople();
     renderCalendar();
+    renderLeavePersonSelect();
   }
   function deletePerson(id){
     state.people = state.people.filter(p=>p.id!==id);
@@ -793,6 +1066,7 @@
     });
     renderPeople();
     renderCalendar();
+    renderLeavePersonSelect();
   }
   function setTarget(id, value){
     const p = personById(id);
@@ -812,26 +1086,32 @@
     });
     return c;
   }
-  function addVacationRange(personId, startStr, endStr){
+  function addVacationRange(personId, startStr, endStr, type){
     if(!startStr) return;
     const end = endStr || startStr;
     if(parseISO(end) < parseISO(startStr)) return;
-    if(!state.vacations[personId]) state.vacations[personId]=[];
+    const m = vacMap(personId);
+    const t = type || '연가';
     let cur = startStr;
     let guard = 0;
     while(guard < 370){
-      if(!state.vacations[personId].includes(cur)) state.vacations[personId].push(cur);
+      m[cur] = t;
       if(cur===end) break;
       cur = addDaysISO(cur, 1);
       guard++;
     }
-    state.vacations[personId].sort();
+    renderPeople();
+    renderCalendar();
+  }
+  function setVacation(personId, dateStr, type){
+    vacMap(personId)[dateStr] = type || '연가';
     renderPeople();
     renderCalendar();
   }
   function removeVacation(personId, dateStr){
-    if(!state.vacations[personId]) return;
-    state.vacations[personId] = state.vacations[personId].filter(d=>d!==dateStr);
+    const m = state.vacations[personId];
+    if(!m) return;
+    delete m[dateStr];
     renderPeople();
     renderCalendar();
   }
@@ -897,13 +1177,12 @@
     state.detailYear = state.viewYear;
     state.detailMonth = state.viewMonth;
 
-    document.getElementById('detailName').textContent = `${p.name} 상세설정`;
+    document.getElementById('detailNameInput').value = p.name;
     document.querySelectorAll('input[name="detailGroup"]').forEach(r=>{ r.checked = (r.value===p.group); });
     updateGroupToggleStyle('detailGroupToggle');
     detailTargetInput.value = p.target===null ? '' : p.target;
 
     renderDetailStats(personId);
-    renderDetailCalendar();
     detailOverlay.classList.add('show');
   }
   function closeDetailModal(){
@@ -925,42 +1204,18 @@
       <div class="stat-box"><div class="stat-box-num">${thisMonthCnt}</div><div class="stat-box-label">${state.detailMonth+1}월</div></div>
     </div>`;
   }
-  function toggleVacationDay(personId, dateStr){
-    if(isOnVacation(personId, dateStr)) removeVacation(personId, dateStr);
-    else addVacationRange(personId, dateStr, dateStr);
-    renderDetailCalendar();
-  }
-  function renderDetailCalendar(){
+  document.getElementById('detailNameInput').addEventListener('change', ()=>{
     const pid = state.detailPersonId;
     if(!pid) return;
-    const y = state.detailYear, m = state.detailMonth;
-    document.getElementById('detailYm').textContent = `${y}년 ${m+1}월`;
-    renderDowRow('detailDowRow');
-
-    const wrap = document.getElementById('detailCalGrid');
-    wrap.innerHTML='';
-    const firstDay = new Date(y, m, 1);
-    const startOffset = firstDay.getDay();
-    const daysInMonth = new Date(y, m+1, 0).getDate();
-
-    for(let i=0;i<startOffset;i++){
-      const e = document.createElement('div');
-      e.className='detail-cell empty';
-      wrap.appendChild(e);
-    }
-    for(let d=1; d<=daysInMonth; d++){
-      const ds = iso(y,m,d);
-      const dateObj = new Date(y,m,d);
-      const off = isWeekend(dateObj) || isHoliday(ds);
-      const vac = isOnVacation(pid, ds);
-      const cell = document.createElement('div');
-      cell.className = 'detail-cell' + (off?' off':'') + (vac?' vac':'');
-      cell.textContent = d;
-      cell.addEventListener('click', ()=> toggleVacationDay(pid, ds));
-      wrap.appendChild(cell);
-    }
-  }
-
+    const p = personById(pid);
+    const input = document.getElementById('detailNameInput');
+    const newName = input.value.trim();
+    if(!newName){ input.value = p.name; return; }
+    p.name = newName;
+    renderPeople();
+    renderCalendar();
+    renderLeavePersonSelect();
+  });
   document.getElementById('detailGroupToggle').addEventListener('change', ()=>{
     const pid = state.detailPersonId;
     if(!pid) return;
@@ -988,20 +1243,6 @@
     const next = cur+1;
     detailTargetInput.value = next;
     setTarget(state.detailPersonId, String(next));
-  });
-  document.getElementById('detailPrevBtn').addEventListener('click', ()=>{
-    state.detailMonth--;
-    if(state.detailMonth<0){ state.detailMonth=11; state.detailYear--; }
-    ensureDefaultHolidays();
-    renderDetailCalendar();
-    renderDetailStats(state.detailPersonId);
-  });
-  document.getElementById('detailNextBtn').addEventListener('click', ()=>{
-    state.detailMonth++;
-    if(state.detailMonth>11){ state.detailMonth=0; state.detailYear++; }
-    ensureDefaultHolidays();
-    renderDetailCalendar();
-    renderDetailStats(state.detailPersonId);
   });
   document.getElementById('detailClose').addEventListener('click', closeDetailModal);
   detailOverlay.addEventListener('click', (e)=>{ if(e.target===detailOverlay) closeDetailModal(); });
@@ -1607,7 +1848,7 @@
         const data = JSON.parse(reader.result);
         state.people = (data.people || []).map(p=>({...p, target: (p.target===undefined ? null : p.target)}));
         state.holidays = data.holidays || {};
-        state.vacations = data.vacations || {};
+        state.vacations = normalizeVacations(data.vacations);
         state.assignments = data.assignments || {};
         state.groupRules = data.groupRules || {A:false, B:true};
         state.locked = data.locked || {};
@@ -1624,10 +1865,305 @@
     e.target.value='';
   });
 
+  // ---------- 연가 관리 탭 ----------
+  state.leaveYear = state.viewYear;
+  state.leaveMonth = state.viewMonth;
+
+  function currentLeaveType(){
+    const el = document.querySelector('input[name="leaveType"]:checked');
+    return el ? el.value : '연가';
+  }
+  function typeClass(t){
+    if(t==='병가') return 'byeong';
+    if(t==='특별휴가') return 'teuk';
+    if(t==='교육') return 'gyoyuk';
+    return 'yeon';
+  }
+  function updateLeaveTypeStyle(){
+    document.querySelectorAll('#leaveTypeToggle .lt').forEach(l=>{
+      l.classList.toggle('on', l.querySelector('input').checked);
+    });
+  }
+  document.getElementById('leaveTypeToggle').addEventListener('change', updateLeaveTypeStyle);
+
+  function renderLeavePersonSelect(){
+    const wrap = document.getElementById('leavePersonList');
+    wrap.innerHTML='';
+    if(state.people.length===0){
+      wrap.innerHTML = '<div class="empty-msg">등록된 인원이 없습니다.</div>';
+      state.leaveSelectedId = null;
+      return;
+    }
+    if(!state.leaveSelectedId || !state.people.find(p=>p.id===state.leaveSelectedId)){
+      state.leaveSelectedId = state.people[0].id;
+    }
+    const y = state.leaveYear, m = state.leaveMonth;
+    const prefix = `${y}-${pad(m+1)}`;
+    state.people.forEach(p=>{
+      const item = document.createElement('div');
+      item.className = 'lp-item' + (p.id===state.leaveSelectedId ? ' active' : '');
+      const m2 = state.vacations[p.id] || {};
+      const cnt = Object.keys(m2).filter(ds=>ds.startsWith(prefix)).length;
+      item.innerHTML = `
+        <div class="lp-name"><span class="dot ${p.group==='A'?'a':'b'}"></span>${escapeHtml(p.name)}</div>
+        <span class="lp-count">${cnt}일</span>
+      `;
+      item.addEventListener('click', ()=>{
+        state.leaveSelectedId = p.id;
+        renderLeavePersonSelect();
+        renderLeaveCalendar();
+      });
+      wrap.appendChild(item);
+    });
+  }
+
+  function renderLeaveCalendar(){
+    const y = state.leaveYear, m = state.leaveMonth;
+    document.getElementById('leaveYmLabel').textContent = `${y}년 ${m+1}월`;
+    renderDowRow('leaveDowRow');
+
+    const pid = state.leaveSelectedId;
+    const grid = document.getElementById('leaveCalGrid');
+    grid.innerHTML='';
+
+    const startOffset = new Date(y, m, 1).getDay();
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+
+    for(let i=0;i<startOffset;i++){
+      const e = document.createElement('div');
+      e.className='lcell empty';
+      grid.appendChild(e);
+    }
+    for(let d=1; d<=daysInMonth; d++){
+      const ds = iso(y,m,d);
+      const dateObj = new Date(y,m,d);
+      const off = isWeekend(dateObj) || isHoliday(ds);
+
+      const cell = document.createElement('div');
+      const myType = pid ? getVacType(pid, ds) : null;
+      cell.className = 'lcell' + (off?' off':'') + (myType?(' sel-'+typeClass(myType)):'');
+
+      const num = document.createElement('div');
+      num.className='datenum';
+      num.textContent = d;
+      cell.appendChild(num);
+
+      if(off){
+        const lbl = document.createElement('div');
+        lbl.className='label';
+        lbl.style.fontSize='10px';
+        lbl.textContent = isHoliday(ds) ? state.holidays[ds] : (dateObj.getDay()===0?'일':'토');
+        cell.appendChild(lbl);
+      } else {
+        // 다른 사람들의 휴가도 참고용으로 표시
+        const others = document.createElement('div');
+        others.className='lothers';
+        state.people.forEach(p=>{
+          if(p.id===pid) return;
+          const t = getVacType(p.id, ds);
+          if(t){
+            const c = document.createElement('span');
+            c.className='lchip';
+            c.textContent = `${p.name}·${t.charAt(0)}`;
+            others.appendChild(c);
+          }
+        });
+        if(others.children.length) cell.appendChild(others);
+
+        if(myType){
+          const tag = document.createElement('div');
+          tag.className='ltag';
+          tag.textContent = myType;
+          cell.appendChild(tag);
+        }
+        cell.addEventListener('click', ()=>{
+          if(!pid) return;
+          const t = currentLeaveType();
+          const existing = getVacType(pid, ds);
+          if(existing === t) removeVacation(pid, ds);
+          else setVacation(pid, ds, t);
+          renderLeaveCalendar();
+          renderLeavePersonSelect();
+        });
+      }
+      grid.appendChild(cell);
+    }
+  }
+
+  document.getElementById('leavePrevBtn').addEventListener('click', ()=>{
+    state.leaveMonth--;
+    if(state.leaveMonth<0){ state.leaveMonth=11; state.leaveYear--; }
+    ensureDefaultHolidays();
+    renderLeaveCalendar();
+    renderLeavePersonSelect();
+  });
+  document.getElementById('leaveNextBtn').addEventListener('click', ()=>{
+    state.leaveMonth++;
+    if(state.leaveMonth>11){ state.leaveMonth=0; state.leaveYear++; }
+    ensureDefaultHolidays();
+    renderLeaveCalendar();
+    renderLeavePersonSelect();
+  });
+
+  // 연속된 날짜를 기간으로 묶어서 표기
+  // 연속된 '일' 숫자를 범위로 묶음 (교육용): [1,2,3,5] -> [[1,3],[5,5]]
+  function groupDayRanges(days){
+    const sorted = days.slice().sort((a,b)=>a-b);
+    const out = [];
+    let start=null, prev=null;
+    sorted.forEach(d=>{
+      if(start===null){ start=d; prev=d; return; }
+      if(d===prev+1){ prev=d; return; }
+      out.push([start,prev]); start=d; prev=d;
+    });
+    if(start!==null) out.push([start,prev]);
+    return out;
+  }
+  function fmtDayList(days, isRange){
+    if(isRange){
+      return groupDayRanges(days).map(([a,b])=> a===b ? `${a}` : `${a}~${b}`).join(', ') + '일';
+    }
+    return days.slice().sort((a,b)=>a-b).join(', ') + '일';
+  }
+
+  function buildLeaveText(scope){
+    const lines = [];
+    const monthOnly = scope==='month';
+    const prefix = `${state.leaveYear}-${pad(state.leaveMonth+1)}`;
+    lines.push(monthOnly ? `[휴가 내역] ${state.leaveYear}년 ${state.leaveMonth+1}월` : '[휴가 내역] 전체');
+    lines.push('');
+    let any = false;
+    state.people.forEach(p=>{
+      const m = state.vacations[p.id] || {};
+      let dates = Object.keys(m);
+      if(monthOnly) dates = dates.filter(ds=> ds.startsWith(prefix));
+      if(dates.length===0) return;
+      any = true;
+      lines.push(p.name);
+      // 월별로 묶고(전체 출력일 때만 월 표시), 각 월 안에서 종류별로 정리
+      const byMonth = {};
+      dates.forEach(ds=>{ const ym=ds.slice(0,7); if(!byMonth[ym]) byMonth[ym]=[]; byMonth[ym].push(ds); });
+      Object.keys(byMonth).sort().forEach(ym=>{
+        const monthNum = parseInt(ym.slice(5,7),10);
+        const monthPrefix = monthOnly ? '' : `${monthNum}월 `;
+        LEAVE_TYPES.forEach(t=>{
+          const dayNums = byMonth[ym].filter(ds=> m[ds]===t).map(ds=> parseInt(ds.slice(8,10),10));
+          if(dayNums.length===0) return;
+          const isRange = (t==='교육');
+          lines.push(`${fmtDayList(dayNums, isRange)} (${monthPrefix}${t})`);
+        });
+      });
+      lines.push('');
+    });
+    if(!any) lines.push('(해당 기간에 등록된 휴가가 없습니다)');
+    return lines.join('\n');
+  }
+
+  document.getElementById('leaveTextMonthBtn').addEventListener('click', ()=>{
+    document.getElementById('leaveTextOut').value = buildLeaveText('month');
+  });
+  document.getElementById('leaveTextAllBtn').addEventListener('click', ()=>{
+    document.getElementById('leaveTextOut').value = buildLeaveText('all');
+  });
+  document.getElementById('leaveCopyBtn').addEventListener('click', ()=>{
+    const ta = document.getElementById('leaveTextOut');
+    if(!ta.value){ alert('먼저 텍스트를 출력해 주세요.'); return; }
+    ta.select();
+    try{ document.execCommand('copy'); alert('복사되었습니다.'); }
+    catch(_){ alert('복사에 실패했습니다. 직접 선택해서 복사해 주세요.'); }
+  });
+
+  // ---------- A4 인쇄용 휴가 달력 ----------
+  function renderPrintCalendar(){
+    const y = state.leaveYear, m = state.leaveMonth;
+    document.getElementById('printTitle').textContent = `${y}년 ${m+1}월 휴가 현황`;
+    const genDate = new Date();
+    document.getElementById('printSub').textContent =
+      `생성일: ${genDate.getFullYear()}.${pad(genDate.getMonth()+1)}.${pad(genDate.getDate())}`;
+
+    const dowWrap = document.getElementById('printDowRow');
+    dowWrap.innerHTML='';
+    DOW.forEach(d=>{ const el=document.createElement('div'); el.textContent=d; dowWrap.appendChild(el); });
+
+    const grid = document.getElementById('printGrid');
+    grid.innerHTML='';
+    const startOffset = new Date(y,m,1).getDay();
+    const daysInMonth = new Date(y,m+1,0).getDate();
+
+    for(let i=0;i<startOffset;i++){
+      const e=document.createElement('div'); e.className='pcell empty'; grid.appendChild(e);
+    }
+    for(let d=1; d<=daysInMonth; d++){
+      const ds = iso(y,m,d);
+      const dateObj = new Date(y,m,d);
+      const off = isWeekend(dateObj) || isHoliday(ds);
+
+      const cell = document.createElement('div');
+      cell.className = 'pcell' + (off?' off':'');
+
+      const num = document.createElement('div');
+      num.className='pnum'; num.textContent=d;
+      cell.appendChild(num);
+
+      if(off && isHoliday(ds)){
+        const h = document.createElement('div');
+        h.className='pholiday'; h.textContent = state.holidays[ds];
+        cell.appendChild(h);
+      }
+
+      const entries = document.createElement('div');
+      entries.className='pentries';
+      state.people.forEach(p=>{
+        const t = getVacType(p.id, ds);
+        if(!t) return;
+        const tag = document.createElement('div');
+        tag.className = 'ptag ' + typeClass(t);
+        tag.textContent = `${p.name} · ${t}`;
+        entries.appendChild(tag);
+      });
+      if(entries.children.length) cell.appendChild(entries);
+
+      grid.appendChild(cell);
+    }
+
+    const legend = document.getElementById('printLegend');
+    legend.innerHTML = LEAVE_TYPES.map(t=>
+      `<span><i style="background:${
+        t==='연가'?'#2F5D62':t==='병가'?'#A63446':t==='특별휴가'?'#B5652A':'#42549C'
+      }"></i>${t}</span>`
+    ).join('');
+  }
+
+  document.getElementById('printCalBtn').addEventListener('click', ()=>{
+    renderPrintCalendar();
+    window.print();
+  });
+
+  // 탭 전환
+  document.getElementById('mtabAssign').addEventListener('click', ()=>{
+    document.getElementById('mtabAssign').classList.add('active');
+    document.getElementById('mtabLeave').classList.remove('active');
+    document.getElementById('viewAssign').style.display='';
+    document.getElementById('viewLeave').style.display='none';
+    renderCalendar();
+  });
+  document.getElementById('mtabLeave').addEventListener('click', ()=>{
+    document.getElementById('mtabLeave').classList.add('active');
+    document.getElementById('mtabAssign').classList.remove('active');
+    document.getElementById('viewLeave').style.display='';
+    document.getElementById('viewAssign').style.display='none';
+    state.leaveYear = state.viewYear;
+    state.leaveMonth = state.viewMonth;
+    renderLeavePersonSelect();
+    updateLeaveTypeStyle();
+    renderLeaveCalendar();
+  });
+
   // ---------- init ----------
   renderDowRow();
   renderPeople();
   renderCalendar();
+  renderLeavePersonSelect();
 })();
 </script>
 </body>
