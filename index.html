@@ -143,6 +143,11 @@
     transition:box-shadow .12s ease;
   }
   .person-item:hover{box-shadow:var(--shadow);}
+  .person-item.muted-item{opacity:0.55;}
+  .disc-badge{
+    font-size:10px; font-weight:700; color:var(--vac);
+    background:#F6EDEC; border-radius:4px; padding:1px 5px;
+  }
   .person-head{
     display:flex;
     align-items:center;
@@ -225,6 +230,8 @@
     align-items:center;
   }
   .detail-ctl-label{font-size:11px; color:var(--ink-soft); font-weight:700;}
+  .discharge-field label{display:block; margin-bottom:6px;}
+  .lp-hint{font-size:11px; font-weight:400; color:var(--muted-text);}
   .group-toggle-sm{margin-bottom:0; width:100%;}
   .group-toggle-sm label{padding:5px 4px; font-size:12px;}
   .stepper{display:flex; align-items:center; gap:0; width:100%;}
@@ -872,6 +879,14 @@
 
     <div id="detailStats" style="margin-bottom:16px;"></div>
 
+    <div class="field discharge-field">
+      <label>전역일 <span class="lp-hint">(이후 날짜는 자동으로 배정 제외되고, 다음 달로 넘어가면 명단에서 빠져요)</span></label>
+      <div class="row" style="margin-bottom:0;">
+        <input type="date" id="detailDischarge" style="flex:1;" />
+        <button class="secondary" type="button" id="detailDischargeClear">해제</button>
+      </div>
+    </div>
+
     <div class="footer-note" style="margin-top:0;">휴가는 상단 '연가 관리' 탭에서 종류별로 지정합니다.</div>
 
     <div class="modal-actions">
@@ -893,6 +908,7 @@
     assignments: {},     // 'YYYY-MM-DD' -> [personId, personId]
     groupRules: {A:false, B:true}, // 같은 그룹끼리 함께 배정 가능 여부
     locked: {}, // 'YYYY-MM-DD' -> [bool, bool] (각 자리의 사람 고정 여부)
+    showDeparted: false,
     viewYear: null,
     viewMonth: null,     // 0-indexed
     editingDate: null,
@@ -1048,11 +1064,20 @@
   function personById(id){
     return state.people.find(p=>p.id===id);
   }
+  function isDeparted(personId, dateStr){
+    const p = personById(personId);
+    return !!(p && p.dischargeDate && dateStr >= p.dischargeDate);
+  }
+  // 해당 (y,m) 월에 조금이라도 활동 가능하면 true (전역일이 그 달의 1일보다 이후일 때)
+  function activeInMonth(person, y, m){
+    if(!person.dischargeDate) return true;
+    return iso(y,m,1) < person.dischargeDate;
+  }
 
   // ---------- people management ----------
   function addPerson(name, group){
     if(!name.trim()) return;
-    state.people.push({id: uid(), name: name.trim(), group, target: null});
+    state.people.push({id: uid(), name: name.trim(), group, target: null, dischargeDate: null});
     renderPeople();
     renderCalendar();
     renderLeavePersonSelect();
@@ -1130,18 +1155,20 @@
   function renderPeople(){
     const wrap = document.getElementById('peopleList');
     wrap.innerHTML='';
-    if(state.people.length===0){
+    const roster = state.people.filter(p=> activeInMonth(p, state.viewYear, state.viewMonth));
+    const departed = state.people.filter(p=> !activeInMonth(p, state.viewYear, state.viewMonth));
+    if(roster.length===0 && departed.length===0){
       wrap.innerHTML = '<div class="empty-msg">등록된 인원이 없습니다.</div>';
       return;
     }
-    state.people.forEach(p=>{
+    function buildCard(p, muted){
       const item = document.createElement('div');
-      item.className='person-item';
+      item.className='person-item' + (muted ? ' muted-item' : '');
       item.setAttribute('data-detail', p.id);
       const monthCount = countForMonth(p.id, state.viewYear, state.viewMonth);
       item.innerHTML = `
         <div class="person-head">
-          <div class="person-name"><span class="dot ${p.group==='A'?'a':'b'}"></span>${escapeHtml(p.name)} <span style="color:var(--ink-soft); font-weight:500;">· ${p.group}</span></div>
+          <div class="person-name"><span class="dot ${p.group==='A'?'a':'b'}"></span>${escapeHtml(p.name)} <span style="color:var(--ink-soft); font-weight:500;">· ${p.group}</span>${muted?' <span class="disc-badge">전역</span>':''}</div>
           <button class="danger" data-del="${p.id}">삭제</button>
         </div>
         <div class="count-row">
@@ -1149,7 +1176,19 @@
         </div>
       `;
       wrap.appendChild(item);
-    });
+    }
+    roster.forEach(p=> buildCard(p, false));
+
+    if(departed.length){
+      const toggle = document.createElement('button');
+      toggle.className='secondary';
+      toggle.style.width='100%';
+      toggle.style.marginTop='4px';
+      toggle.textContent = state.showDeparted ? '전역 인원 숨기기' : `전역 인원 ${departed.length}명 보기`;
+      toggle.addEventListener('click', ()=>{ state.showDeparted = !state.showDeparted; renderPeople(); });
+      wrap.appendChild(toggle);
+      if(state.showDeparted) departed.forEach(p=> buildCard(p, true));
+    }
 
     wrap.querySelectorAll('[data-del]').forEach(b=>{
       b.addEventListener('click', (e)=>{
@@ -1181,6 +1220,7 @@
     document.querySelectorAll('input[name="detailGroup"]').forEach(r=>{ r.checked = (r.value===p.group); });
     updateGroupToggleStyle('detailGroupToggle');
     detailTargetInput.value = p.target===null ? '' : p.target;
+    document.getElementById('detailDischarge').value = p.dischargeDate || '';
 
     renderDetailStats(personId);
     detailOverlay.classList.add('show');
@@ -1214,6 +1254,26 @@
     p.name = newName;
     renderPeople();
     renderCalendar();
+    renderLeavePersonSelect();
+  });
+  document.getElementById('detailDischarge').addEventListener('change', ()=>{
+    const pid = state.detailPersonId;
+    if(!pid) return;
+    const p = personById(pid);
+    const val = document.getElementById('detailDischarge').value;
+    p.dischargeDate = val || null;
+    renderCalendar();
+    renderPeople();
+    renderLeavePersonSelect();
+  });
+  document.getElementById('detailDischargeClear').addEventListener('click', ()=>{
+    const pid = state.detailPersonId;
+    if(!pid) return;
+    const p = personById(pid);
+    p.dischargeDate = null;
+    document.getElementById('detailDischarge').value = '';
+    renderCalendar();
+    renderPeople();
     renderLeavePersonSelect();
   });
   document.getElementById('detailGroupToggle').addEventListener('change', ()=>{
@@ -1453,6 +1513,8 @@
       if(arr[0] && arr[1] && !pairValid(arr[0], arr[1])) problems.push(`${dateLabel(ds)}: 그룹 규칙 위반`);
       // 휴가
       if(isOnVacation(movedPid, ds)) problems.push(`${dateLabel(ds)}: 휴가일에 배정됨`);
+      // 전역일 이후
+      if(isDeparted(movedPid, ds)) problems.push(`${dateLabel(ds)}: 전역일 이후`);
       // 연속 배정 (앞/뒤 근무일)
       const prevWD = getAdjacentWorkingDay(ds,-1);
       const nextWD = getAdjacentWorkingDay(ds,1);
@@ -1507,6 +1569,7 @@
 
   function ineligibleReason(pid, dateStr, otherId){
     const reasons = [];
+    if(isDeparted(pid, dateStr)) reasons.push('전역');
     if(isOnVacation(pid, dateStr)) reasons.push('휴가');
     const prevWD = getAdjacentWorkingDay(dateStr,-1);
     const nextWD = getAdjacentWorkingDay(dateStr,1);
@@ -1676,6 +1739,7 @@
 
       const cand = state.people.filter(p=>
         !isOnVacation(p.id, ds) &&
+        !isDeparted(p.id, ds) &&
         !prevAssigned.includes(p.id) &&
         !nextAssigned.includes(p.id) &&
         (p.target===null || assignCount[p.id] < p.target)
@@ -1846,7 +1910,7 @@
     reader.onload = ()=>{
       try{
         const data = JSON.parse(reader.result);
-        state.people = (data.people || []).map(p=>({...p, target: (p.target===undefined ? null : p.target)}));
+        state.people = (data.people || []).map(p=>({...p, target: (p.target===undefined ? null : p.target), dischargeDate: (p.dischargeDate===undefined ? null : p.dischargeDate)}));
         state.holidays = data.holidays || {};
         state.vacations = normalizeVacations(data.vacations);
         state.assignments = data.assignments || {};
@@ -1889,17 +1953,18 @@
   function renderLeavePersonSelect(){
     const wrap = document.getElementById('leavePersonList');
     wrap.innerHTML='';
-    if(state.people.length===0){
+    const roster = state.people.filter(p=> activeInMonth(p, state.leaveYear, state.leaveMonth));
+    if(roster.length===0){
       wrap.innerHTML = '<div class="empty-msg">등록된 인원이 없습니다.</div>';
       state.leaveSelectedId = null;
       return;
     }
-    if(!state.leaveSelectedId || !state.people.find(p=>p.id===state.leaveSelectedId)){
-      state.leaveSelectedId = state.people[0].id;
+    if(!state.leaveSelectedId || !roster.find(p=>p.id===state.leaveSelectedId)){
+      state.leaveSelectedId = roster[0].id;
     }
     const y = state.leaveYear, m = state.leaveMonth;
     const prefix = `${y}-${pad(m+1)}`;
-    state.people.forEach(p=>{
+    roster.forEach(p=>{
       const item = document.createElement('div');
       item.className = 'lp-item' + (p.id===state.leaveSelectedId ? ' active' : '');
       const m2 = state.vacations[p.id] || {};
@@ -1923,6 +1988,7 @@
     renderDowRow('leaveDowRow');
 
     const pid = state.leaveSelectedId;
+    const selPerson = pid ? personById(pid) : null;
     const grid = document.getElementById('leaveCalGrid');
     grid.innerHTML='';
 
@@ -1938,17 +2004,41 @@
       const ds = iso(y,m,d);
       const dateObj = new Date(y,m,d);
       const off = isWeekend(dateObj) || isHoliday(ds);
+      const departedDay = pid && isDeparted(pid, ds);
 
       const cell = document.createElement('div');
-      const myType = pid ? getVacType(pid, ds) : null;
-      cell.className = 'lcell' + (off?' off':'') + (myType?(' sel-'+typeClass(myType)):'');
+      const myType = (pid && !departedDay) ? getVacType(pid, ds) : null;
+      cell.className = 'lcell' + ((off || departedDay) ? ' off' : '') + (myType?(' sel-'+typeClass(myType)):'');
 
       const num = document.createElement('div');
       num.className='datenum';
       num.textContent = d;
       cell.appendChild(num);
 
-      if(off){
+      if(departedDay){
+        // 전역일 당일에만 라벨을 표시하고, 그 이후는 공휴일처럼 그냥 회색으로만 표시
+        if(pid && ds === selPerson.dischargeDate){
+          const lbl = document.createElement('div');
+          lbl.className='label';
+          lbl.style.fontSize='10px';
+          lbl.textContent='전역';
+          cell.appendChild(lbl);
+        }
+        // 다른 사람들 휴가는 참고용으로 계속 보여줌
+        const others = document.createElement('div');
+        others.className='lothers';
+        state.people.forEach(p=>{
+          if(p.id===pid) return;
+          const t = getVacType(p.id, ds);
+          if(t){
+            const c = document.createElement('span');
+            c.className='lchip';
+            c.textContent = `${p.name}·${t.charAt(0)}`;
+            others.appendChild(c);
+          }
+        });
+        if(others.children.length) cell.appendChild(others);
+      } else if(off){
         const lbl = document.createElement('div');
         lbl.className='label';
         lbl.style.fontSize='10px';
@@ -2037,20 +2127,32 @@
       const m = state.vacations[p.id] || {};
       let dates = Object.keys(m);
       if(monthOnly) dates = dates.filter(ds=> ds.startsWith(prefix));
-      if(dates.length===0) return;
+
+      const dischargeYm = p.dischargeDate ? p.dischargeDate.slice(0,7) : null;
+      const dischargeDay = p.dischargeDate ? parseInt(p.dischargeDate.slice(8,10),10) : null;
+      const dischargeInScope = dischargeYm && (!monthOnly || dischargeYm===prefix);
+
+      if(dates.length===0 && !dischargeInScope) return;
       any = true;
       lines.push(p.name);
       // 월별로 묶고(전체 출력일 때만 월 표시), 각 월 안에서 종류별로 정리
       const byMonth = {};
       dates.forEach(ds=>{ const ym=ds.slice(0,7); if(!byMonth[ym]) byMonth[ym]=[]; byMonth[ym].push(ds); });
+      if(dischargeInScope && !byMonth[dischargeYm]) byMonth[dischargeYm] = [];
       Object.keys(byMonth).sort().forEach(ym=>{
         const monthNum = parseInt(ym.slice(5,7),10);
         const monthPrefix = monthOnly ? '' : `${monthNum}월 `;
-        LEAVE_TYPES.forEach(t=>{
+        const groups = LEAVE_TYPES.map(t=>{
           const dayNums = byMonth[ym].filter(ds=> m[ds]===t).map(ds=> parseInt(ds.slice(8,10),10));
-          if(dayNums.length===0) return;
-          const isRange = (t==='교육');
-          lines.push(`${fmtDayList(dayNums, isRange)} (${monthPrefix}${t})`);
+          return dayNums.length ? {t, dayNums, minDay: Math.min(...dayNums)} : null;
+        }).filter(Boolean);
+        if(ym===dischargeYm && dischargeInScope){
+          groups.push({t:'전역', dayNums:[dischargeDay], minDay: dischargeDay});
+        }
+        groups.sort((a,b)=> a.minDay - b.minDay); // 날짜순(가장 이른 날짜가 먼저 오는 유형부터)
+        groups.forEach(g=>{
+          const isRange = (g.t==='교육');
+          lines.push(`${fmtDayList(g.dayNums, isRange)} (${monthPrefix}${g.t})`);
         });
       });
       lines.push('');
